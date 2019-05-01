@@ -1,4 +1,4 @@
-package SnakesMaster
+package SnakeMasters
 
 func (w *World) setBalance() {
 	curentBalance := w.calcBalance()
@@ -19,10 +19,8 @@ func (w *World) calcBalance() int {
 			}
 		}
 	}
-
 	for n := range w.snake {
 		result += len(w.snake[n].body)
 	}
-
 	return result
 }

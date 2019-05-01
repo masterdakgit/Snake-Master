@@ -1,4 +1,4 @@
-package SnakesMaster
+package SnakeMasters
 
 type World struct {
 	area       [][]int

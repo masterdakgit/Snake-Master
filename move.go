@@ -1,4 +1,4 @@
-package SnakesMaster
+package SnakeMasters
 
 var dir [4]direction
 
