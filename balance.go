@@ -19,8 +19,8 @@ func (w *World) calcBalance() int {
 			}
 		}
 	}
-	for n := range w.snake {
-		result += len(w.snake[n].body)
+	for n := range w.snakes {
+		result += len(w.snakes[n].body)
 	}
 	return result
 }

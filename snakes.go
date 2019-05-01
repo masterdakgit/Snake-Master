@@ -6,7 +6,7 @@ const (
 	startLength = 4
 )
 
-type snakes struct {
+type snake struct {
 	num     int
 	command int
 	body    []cell

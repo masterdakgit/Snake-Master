@@ -4,7 +4,8 @@ type World struct {
 	area       [][]int
 	lenX, lenY int
 	balance    int
-	snake      []snakes
+	snakes     []snake
+	clients    []client
 }
 
 func (w *World) Сreate(lenX, lenY, balance, wall int) {
@@ -16,7 +17,8 @@ func (w *World) Сreate(lenX, lenY, balance, wall int) {
 	w.lenX = lenX
 	w.lenY = lenY
 	w.balance = balance
-	w.snake = make([]snakes, 0)
+	w.snakes = make([]snake, 0)
+	w.clients = make([]client, 0)
 	w.setBalance()
 	w.addWallN(wall)
 }

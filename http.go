@@ -1,14 +1,22 @@
 package SnakeMasters
 
 import (
-	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 )
 
-func (w *World) server(rw http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(rw, "Welcom to the Snake Masters!")
+func (w *World) server(wr http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
 
+	}
+	tmpl, err := template.ParseFiles("index.html")
+	login := `<a href="` + string(w.clients[n].hash.Sum(nil)) + `">Start game</a>`
+	err = tmpl.Execute(wr, login)
+
+	if err != nil {
+		log.Fatal("w.server:", err)
+	}
 }
 
 func (w *World) StartServer() {
