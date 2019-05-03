@@ -2,6 +2,10 @@ package SnakeMasters
 
 import "image/color"
 
+const (
+	energeStart = 10
+)
+
 type World struct {
 	clMap      map[string]client
 	clSnake    [][]snake
@@ -17,8 +21,9 @@ type client struct {
 }
 
 type snake struct {
-	body []cell
-	dir  direction
+	body   []cell
+	dir    direction
+	energe int
 }
 
 type direction struct {

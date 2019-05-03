@@ -1,5 +1,7 @@
 package SnakeMasters
 
+import "fmt"
+
 func (w *World) setMove(move string, s *snake) string {
 	switch move {
 	case "l":
@@ -22,7 +24,7 @@ func (w *World) setMove(move string, s *snake) string {
 	return `You must enter: "l", "r", "u" or "d".`
 }
 
-func (w *World) move(s *snake) {
+func (w *World) move(s *snake, cl int) {
 	x := s.body[0].x
 	y := s.body[0].y
 
@@ -35,6 +37,9 @@ func (w *World) move(s *snake) {
 	case elHead:
 		return
 	case elBody:
+		if len(s.body) > 1 && s.body[1].x == x && s.body[1].y == y {
+			s.div(w, cl)
+		}
 		return
 	case elEat:
 		s.eat(w)
@@ -42,18 +47,24 @@ func (w *World) move(s *snake) {
 	}
 
 	lastN := len(s.body) - 1
-	w.area[s.body[lastN].x][s.body[lastN].y] = elEmpty
+
+	for n := range s.body {
+		w.area[s.body[n].x][s.body[n].y] = elEmpty
+	}
 
 	for n := lastN; n > 0; n-- {
 		s.body[n].x = s.body[n-1].x
 		s.body[n].y = s.body[n-1].y
 	}
 
-	w.area[s.body[lastN].x][s.body[lastN].y] = elBody
-	w.area[s.body[0].x][s.body[0].y] = elBody
-	w.area[x][y] = elHead
 	s.body[0].x = x
 	s.body[0].y = y
+
+	for n := range s.body {
+		w.area[s.body[n].x][s.body[n].y] = elBody
+	}
+
+	w.area[x][y] = elHead
 }
 
 func (s *snake) eat(w *World) {
@@ -65,4 +76,20 @@ func (s *snake) eat(w *World) {
 	c.color = s.body[nLast].color
 
 	s.body = append(s.body, c)
+}
+
+func (s *snake) div(w *World, cl int) {
+	var newSnake snake
+	sLen := len(s.body)
+	newSnake.body = make([]cell, sLen-sLen/2)
+
+	for n := sLen / 2; n < sLen; n++ {
+		newSnake.body[n-sLen/2].x = s.body[n].x
+		newSnake.body[n-sLen/2].y = s.body[n].y
+		newSnake.body[n-sLen/2].color = s.body[n].color
+	}
+
+	s.body = s.body[:sLen/2]
+	fmt.Println(sLen, len(s.body), len(newSnake.body))
+	w.clSnake[cl] = append(w.clSnake[cl], newSnake)
 }

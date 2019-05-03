@@ -53,6 +53,7 @@ func (w *World) snakeCreate(name string) snake {
 	var s snake
 	x, y := w.findElement(elEmpty)
 	s.body = make([]cell, startLength)
+	s.energe = energeStart
 
 	for n := range s.body {
 		s.body[n].x = x

@@ -73,28 +73,27 @@ func (w *World) game(cl int, conn net.Conn) {
 	for {
 		for n := range w.clSnake[cl] {
 			as := w.areaString(&w.clSnake[cl][n])
-			_, err := fmt.Fprintf(conn, "\n\rSnake position: %d, %d\n\n\r",
-				w.clSnake[cl][n].body[0].x, w.clSnake[cl][n].body[0].y)
+			_, err := fmt.Fprintf(conn, "\n\rSnake N %d, len = %d, x = %d, y = %d\n\n\r", n,
+				len(w.clSnake[cl][n].body), w.clSnake[cl][n].body[0].x, w.clSnake[cl][n].body[0].y)
 			_, err = fmt.Fprint(conn, as+"\n\n\r")
 
-			for {
-				_, err = fmt.Fprint(conn, "Your move: ")
-				move := ""
-				_, err = fmt.Fscanln(conn, &move)
-				m := w.setMove(move, &w.clSnake[cl][n])
+			if err != nil {
+				err = conn.Close()
+				errProc(err)
+				return
+			}
+		}
+		for n := range w.clSnake[cl] {
 
-				if m == "" {
-					w.move(&w.clSnake[cl][n])
-					break
-				} else {
-					_, err = fmt.Fprint(conn, m+"\n\n\r")
-				}
+			_, err := fmt.Fprintf(conn, "Move for Snake N %d: ", n)
+			move := ""
+			_, err = fmt.Fscanln(conn, &move)
+			m := w.setMove(move, &w.clSnake[cl][n])
 
-				if err != nil {
-					err = conn.Close()
-					errProc(err)
-					return
-				}
+			if m == "" {
+				w.move(&w.clSnake[cl][n], cl)
+			} else {
+				_, err = fmt.Fprint(conn, m+"\n\n\r")
 			}
 
 			if err != nil {
