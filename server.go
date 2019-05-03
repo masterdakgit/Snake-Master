@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"image/color"
 	"net"
-	"strconv"
 )
 
 const (
@@ -17,6 +16,7 @@ var (
 
 func (w *World) ListenAndServe(port string) {
 	listener, err := net.Listen("tcp", port)
+
 	errProc(err)
 	for {
 		conn, err := listener.Accept()
@@ -27,6 +27,18 @@ func (w *World) ListenAndServe(port string) {
 			continue
 		}
 		go w.handleConnection(conn)
+	}
+}
+
+func (w *World) handleConnection(conn net.Conn) {
+	name := w.loginName(conn)
+	w.game(w.clMap[name].num, conn)
+	delete(w.clMap, name)
+}
+
+func errProc(err error) {
+	if err != nil {
+		fmt.Println(err)
 	}
 }
 
@@ -61,8 +73,8 @@ func (w *World) game(cl int, conn net.Conn) {
 	for {
 		for n := range w.clSnake[cl] {
 			as := w.areaString(&w.clSnake[cl][n])
-			_, err := fmt.Fprint(conn, "\n\rSnake position: "+strconv.Itoa(w.clSnake[cl][n].body[0].x))
-			_, err = fmt.Fprint(conn, ", "+strconv.Itoa(w.clSnake[cl][n].body[0].y)+"\n\n\r")
+			_, err := fmt.Fprintf(conn, "\n\rSnake position: %d, %d\n\n\r",
+				w.clSnake[cl][n].body[0].x, w.clSnake[cl][n].body[0].y)
 			_, err = fmt.Fprint(conn, as+"\n\n\r")
 
 			for {
@@ -79,27 +91,17 @@ func (w *World) game(cl int, conn net.Conn) {
 				}
 
 				if err != nil {
-					conn.Close()
+					err = conn.Close()
+					errProc(err)
 					return
 				}
 			}
 
 			if err != nil {
-				conn.Close()
+				err = conn.Close()
+				errProc(err)
 				return
 			}
 		}
-	}
-
-}
-
-func (w *World) handleConnection(conn net.Conn) {
-	name := w.loginName(conn)
-	w.game(w.clMap[name].num, conn)
-}
-
-func errProc(err error) {
-	if err != nil {
-		fmt.Println(err)
 	}
 }
