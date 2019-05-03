@@ -49,13 +49,12 @@ func (w *World) loginName(conn net.Conn) string {
 	var name string
 
 	for {
-		_, err = fmt.Fprint(conn, "\nEnter you name:\n\r")
+		_, err = fmt.Fprint(conn, "Enter you name:\n\r")
 
 		name = ""
 		_, err = fmt.Fscanln(conn, &name)
 
 		ans := w.correctName(name)
-		_, err = fmt.Fprint(conn, "\n\r")
 		_, err = fmt.Fprint(conn, ans+"\n\r")
 
 		if err != nil {
