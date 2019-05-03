@@ -14,6 +14,11 @@ type World struct {
 	lenX, lenY int
 }
 
+type SnakeSlice struct {
+	Color  color.RGBA
+	Snakes []snake
+}
+
 type client struct {
 	num   int
 	name  string
@@ -21,9 +26,10 @@ type client struct {
 }
 
 type snake struct {
-	body   []cell
-	dir    direction
-	energe int
+	Body       []cell
+	Visibility [viewLen][viewLen]string
+	Energe     int
+	dir        direction
 }
 
 type direction struct {
@@ -31,8 +37,7 @@ type direction struct {
 }
 
 type cell struct {
-	x, y  int
-	color color.RGBA
+	X, Y int
 }
 
 func (w *World) Create(x, y, balance, wall int) {

@@ -25,8 +25,8 @@ func (w *World) setMove(move string, s *snake) string {
 }
 
 func (w *World) move(s *snake, cl int) {
-	x := s.body[0].x
-	y := s.body[0].y
+	x := s.Body[0].X
+	y := s.Body[0].Y
 
 	x = x + s.dir.dx
 	y = y + s.dir.dy
@@ -37,7 +37,7 @@ func (w *World) move(s *snake, cl int) {
 	case elHead:
 		return
 	case elBody:
-		if len(s.body) > 1 && s.body[1].x == x && s.body[1].y == y {
+		if len(s.Body) > 1 && s.Body[1].X == x && s.Body[1].Y == y {
 			s.div(w, cl)
 		}
 		return
@@ -46,22 +46,22 @@ func (w *World) move(s *snake, cl int) {
 	case elEmpty:
 	}
 
-	lastN := len(s.body) - 1
+	lastN := len(s.Body) - 1
 
-	for n := range s.body {
-		w.area[s.body[n].x][s.body[n].y] = elEmpty
+	for n := range s.Body {
+		w.area[s.Body[n].X][s.Body[n].Y] = elEmpty
 	}
 
 	for n := lastN; n > 0; n-- {
-		s.body[n].x = s.body[n-1].x
-		s.body[n].y = s.body[n-1].y
+		s.Body[n].X = s.Body[n-1].X
+		s.Body[n].Y = s.Body[n-1].Y
 	}
 
-	s.body[0].x = x
-	s.body[0].y = y
+	s.Body[0].X = x
+	s.Body[0].Y = y
 
-	for n := range s.body {
-		w.area[s.body[n].x][s.body[n].y] = elBody
+	for n := range s.Body {
+		w.area[s.Body[n].X][s.Body[n].Y] = elBody
 	}
 
 	w.area[x][y] = elHead
@@ -69,27 +69,25 @@ func (w *World) move(s *snake, cl int) {
 
 func (s *snake) eat(w *World) {
 	var c cell
-	nLast := len(s.body) - 1
+	nLast := len(s.Body) - 1
 
-	c.x = s.body[nLast].x
-	c.y = s.body[nLast].y
-	c.color = s.body[nLast].color
+	c.X = s.Body[nLast].X
+	c.Y = s.Body[nLast].Y
 
-	s.body = append(s.body, c)
+	s.Body = append(s.Body, c)
 }
 
 func (s *snake) div(w *World, cl int) {
 	var newSnake snake
-	sLen := len(s.body)
-	newSnake.body = make([]cell, sLen-sLen/2)
+	sLen := len(s.Body)
+	newSnake.Body = make([]cell, sLen-sLen/2)
 
 	for n := sLen / 2; n < sLen; n++ {
-		newSnake.body[n-sLen/2].x = s.body[n].x
-		newSnake.body[n-sLen/2].y = s.body[n].y
-		newSnake.body[n-sLen/2].color = s.body[n].color
+		newSnake.Body[n-sLen/2].X = s.Body[n].X
+		newSnake.Body[n-sLen/2].Y = s.Body[n].Y
 	}
 
-	s.body = s.body[:sLen/2]
-	fmt.Println(sLen, len(s.body), len(newSnake.body))
+	s.Body = s.Body[:sLen/2]
+	fmt.Println(sLen, len(s.Body), len(newSnake.Body))
 	w.clSnake[cl] = append(w.clSnake[cl], newSnake)
 }

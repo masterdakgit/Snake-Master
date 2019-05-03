@@ -6,6 +6,23 @@ import (
 	"regexp"
 )
 
+type SnakeData struct {
+	Color struct {
+		R uint8
+		G uint8
+		B uint8
+		A uint8
+	}
+	Snakes []struct {
+		Body []struct {
+			X int
+			Y int
+		}
+		Visibility [][]string
+		Energe     int
+	}
+}
+
 func (w *World) correctName(name string) string {
 	if len(name) < 3 || len(name) > 16 {
 		return "Name must consist 3-16 char."
@@ -45,23 +62,20 @@ func (w *World) addNewClient(name string) {
 func (w *World) addNewSnake(name string) {
 	num := w.clMap[name].num
 	s := w.snakeCreate(name)
-	w.area[s.body[0].x][s.body[0].y] = elHead
+	w.area[s.Body[0].X][s.Body[0].Y] = elHead
 	w.clSnake[num] = append(w.clSnake[num], s)
 }
 
 func (w *World) snakeCreate(name string) snake {
 	var s snake
 	x, y := w.findElement(elEmpty)
-	s.body = make([]cell, startLength)
-	s.energe = energeStart
+	s.Body = make([]cell, startLength)
+	s.Energe = energeStart
 
-	for n := range s.body {
-		s.body[n].x = x
-		s.body[n].y = y
-		s.body[n].color = w.clMap[name].color
+	for n := range s.Body {
+		s.Body[n].X = x
+		s.Body[n].Y = y
 	}
-
-	s.body[0].color = colorHead
 
 	return s
 }

@@ -3,7 +3,6 @@ package SnakeMasters
 import (
 	"log"
 	"math/rand"
-	"strings"
 )
 
 const (
@@ -69,32 +68,30 @@ func (w *World) delEatN(n int) {
 	}
 }
 
-func (w *World) areaString(s *snake) string {
-	x := s.body[0].x
-	y := s.body[0].y
+func (w *World) visiString(s *snake) {
+	x := s.Body[0].X
+	y := s.Body[0].Y
 	x0 := x - viewRange
 	x1 := x + viewRange
 	y0 := y - viewRange
 	y1 := y + viewRange
 
-	as := make([]string, (viewLen+1)*viewLen)
 	n := 0
+	var as [viewLen][viewLen]string
 
 	for y := y0; y <= y1; y++ {
 		for x := x0; x <= x1; x++ {
 			if y < 0 || y >= w.lenY || x < 0 || x >= w.lenX {
 				//Out of the edge
-				as[n] = "#"
+				as[x-x0][y-y0] = "#"
 				n++
 			} else {
-				as[n] = elString(w.area[x][y])
+				as[x-x0][y-y0] = elString(w.area[x][y])
 				n++
 			}
 		}
-		as[n] = "\n\r"
-		n++
 	}
-	return strings.Join(as, "")
+	s.Visibility = as
 }
 
 func elString(n int) string {

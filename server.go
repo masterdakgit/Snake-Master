@@ -1,8 +1,10 @@
 package SnakeMasters
 
 import (
+	"encoding/json"
 	"fmt"
 	"image/color"
+	"log"
 	"net"
 )
 
@@ -32,7 +34,7 @@ func (w *World) ListenAndServe(port string) {
 
 func (w *World) handleConnection(conn net.Conn) {
 	name := w.loginName(conn)
-	w.game(w.clMap[name].num, conn)
+	w.game(w.clMap[name], conn)
 	delete(w.clMap, name)
 }
 
@@ -47,7 +49,7 @@ func (w *World) loginName(conn net.Conn) string {
 	var name string
 
 	for {
-		_, err = fmt.Fprint(conn, "\n\rEnter you name: ")
+		_, err = fmt.Fprint(conn, "\nEnter you name:\n\r")
 
 		name = ""
 		_, err = fmt.Fscanln(conn, &name)
@@ -69,37 +71,39 @@ func (w *World) loginName(conn net.Conn) string {
 
 }
 
-func (w *World) game(cl int, conn net.Conn) {
+func (w *World) game(cl client, conn net.Conn) {
 	for {
-		for n := range w.clSnake[cl] {
-			as := w.areaString(&w.clSnake[cl][n])
-			_, err := fmt.Fprintf(conn, "\n\rSnake N %d, len = %d, x = %d, y = %d\n\n\r", n,
-				len(w.clSnake[cl][n].body), w.clSnake[cl][n].body[0].x, w.clSnake[cl][n].body[0].y)
-			_, err = fmt.Fprint(conn, as+"\n\n\r")
+		var ssio SnakeSlice
+		ssio.Color = cl.color
+		ssio.Snakes = w.clSnake[cl.num]
 
-			if err != nil {
-				err = conn.Close()
-				errProc(err)
-				return
-			}
+		for n := range ssio.Snakes {
+			w.visiString(&ssio.Snakes[n])
 		}
-		for n := range w.clSnake[cl] {
 
-			_, err := fmt.Fprintf(conn, "Move for Snake N %d: ", n)
-			move := ""
-			_, err = fmt.Fscanln(conn, &move)
-			m := w.setMove(move, &w.clSnake[cl][n])
+		b, err := json.Marshal(ssio)
+		if err != nil {
+			log.Println(err)
+			break
+		}
 
-			if m == "" {
-				w.move(&w.clSnake[cl][n], cl)
+		conn.Write(b)
+		_, err = fmt.Fprint(conn, "\n\r")
+		if err != nil {
+			log.Println(err)
+			break
+		}
+
+		move := ""
+		for n := range w.clSnake[cl.num] {
+		reEnter:
+			fmt.Fscanln(conn, &move)
+			s := w.setMove(move, &w.clSnake[cl.num][n])
+			if s != "" {
+				fmt.Fprintln(conn, s)
+				goto reEnter
 			} else {
-				_, err = fmt.Fprint(conn, m+"\n\n\r")
-			}
-
-			if err != nil {
-				err = conn.Close()
-				errProc(err)
-				return
+				w.move(&w.clSnake[cl.num][n], cl.num)
 			}
 		}
 	}
