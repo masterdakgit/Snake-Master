@@ -37,7 +37,7 @@ func (w *World) move(s *snake) {
 	case elBody:
 		return
 	case elEat:
-		return
+		s.eat(w)
 	case elEmpty:
 	}
 
@@ -54,5 +54,15 @@ func (w *World) move(s *snake) {
 	w.area[x][y] = elHead
 	s.body[0].x = x
 	s.body[0].y = y
+}
 
+func (s *snake) eat(w *World) {
+	var c cell
+	nLast := len(s.body) - 1
+
+	c.x = s.body[nLast].x
+	c.y = s.body[nLast].y
+	c.color = s.body[nLast].color
+
+	s.body = append(s.body, c)
 }

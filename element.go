@@ -3,10 +3,12 @@ package SnakeMasters
 import (
 	"log"
 	"math/rand"
+	"strings"
 )
 
 const (
 	viewRange = 6
+	viewLen   = 1 + 2*viewRange
 
 	elEmpty = 0
 	elEat   = -1
@@ -75,20 +77,24 @@ func (w *World) areaString(s *snake) string {
 	y0 := y - viewRange
 	y1 := y + viewRange
 
-	as := ""
+	as := make([]string, (viewLen+1)*viewLen)
+	n := 0
 
 	for y := y0; y <= y1; y++ {
 		for x := x0; x <= x1; x++ {
 			if y < 0 || y >= w.lenY || x < 0 || x >= w.lenX {
-				//Out of the map edge
-				as += "#"
+				//Out of the edge
+				as[n] = "#"
+				n++
 			} else {
-				as += elString(w.area[x][y])
+				as[n] = elString(w.area[x][y])
+				n++
 			}
 		}
-		as += "\n\r"
+		as[n] = "\n\r"
+		n++
 	}
-	return as
+	return strings.Join(as, "")
 }
 
 func elString(n int) string {
