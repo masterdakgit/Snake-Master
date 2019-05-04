@@ -1,7 +1,6 @@
 package SnakeMasters
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 )
@@ -65,14 +64,10 @@ func (w *World) currentBalance() int {
 
 func (w *World) setBalance() {
 	currentBalance := w.currentBalance()
-	fmt.Println(currentBalance)
-
 	if currentBalance < w.balance {
-		fmt.Println("Add Eat")
 		w.addEatN(w.balance - currentBalance)
 	}
 	if currentBalance > w.balance {
-		fmt.Println("Del Eat")
 		w.delEatN(currentBalance - w.balance)
 	}
 }
@@ -97,7 +92,7 @@ func (w *World) Generation() {
 			if w.users[u].Snakes[s].dead {
 				continue
 			}
-			w.users[u].Snakes[s].move(w)
+			w.users[u].Snakes[s].move(w, &w.users[u])
 			w.users[u].Snakes[s].Energe--
 			if w.users[u].Snakes[s].Energe <= 0 {
 				w.users[u].Snakes[s].eatSomeSelf(w, &w.users[u])
