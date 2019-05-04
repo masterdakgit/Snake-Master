@@ -86,11 +86,11 @@ func (w *World) Generation() {
 		if u.disconnect {
 			continue
 		}
-		for _, s := range u.Snakes {
+		for n, s := range u.Snakes {
 			if s.dead {
 				continue
 			}
-			s.move(&u, w)
+			s.move(w, &u, n)
 		}
 	}
 	w.imgChange()
