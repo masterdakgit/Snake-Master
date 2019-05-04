@@ -18,11 +18,22 @@ func (w *World) setMove(move string, s *snake) string {
 		s.dir.dx = 0
 		s.dir.dy = 1
 		return ""
+	case "/":
+		s.dir.dx = 1000
+		s.dir.dy = 0
+		return ""
+
 	}
-	return `You must enter: "l", "r", "u" or "d".`
+	return `You must enter: "l", "r", "u", "d" or "/".`
 }
 
-func (s *snake) move(w *World) {
+func (s *snake) move(w *World, u *User) {
+	if s.dir.dx == 1000 {
+		s.dir.dx = 0
+		s.div(w, u)
+		return
+	}
+
 	x := s.Body[0].X + s.dir.dx
 	y := s.Body[0].Y + s.dir.dy
 

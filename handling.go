@@ -8,7 +8,12 @@ import (
 	"math/rand"
 	"net"
 	"regexp"
+	"sync"
 	"time"
+)
+
+var (
+	mutex sync.Mutex
 )
 
 type jsonSent struct {
@@ -68,7 +73,9 @@ func (w *World) addNewUser(name string) {
 	u.Color = color.RGBA{R, G, B, 255}
 
 	userNum := len(w.users)
+	mutex.Lock()
 	w.userNum[name] = userNum
+	mutex.Unlock()
 	w.users = append(w.users, u)
 
 	w.users[userNum].addNewSnake(w)
