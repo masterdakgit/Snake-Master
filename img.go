@@ -1,12 +1,16 @@
 package SnakeMasters
 
 import (
+	"golang.org/x/image/font"
+	"golang.org/x/image/font/basicfont"
+	"golang.org/x/image/math/fixed"
 	"image"
 	"image/color"
+	"sort"
 )
 
 const (
-	infoPanelY = 64
+	infoPanelX = 160
 )
 
 var (
@@ -35,7 +39,7 @@ func (w *World) setSnakeImg() {
 			continue
 		}
 		for _, s := range u.Snakes {
-			if s.dead {
+			if s.Dead {
 				continue
 			}
 			for _, b := range s.Body {
@@ -47,6 +51,8 @@ func (w *World) setSnakeImg() {
 }
 
 func (w *World) imgChange() *image.RGBA {
+	w.setInfoPanel()
+
 	for x := range w.area {
 		for y := range w.area[x] {
 			switch w.area[x][y] {
@@ -62,4 +68,43 @@ func (w *World) imgChange() *image.RGBA {
 
 	w.setSnakeImg()
 	return w.Imgage
+}
+
+func (w *World) setInfoPanel() {
+	for x := w.lenX*bar + 1; x < w.lenX*bar+infoPanelX; x++ {
+		for y := 0; y < w.lenY*bar; y++ {
+			w.Imgage.Set(x, y, colorEmpty)
+		}
+	}
+
+	user := make([]string, len(w.userNum))
+
+	k := 0
+	for n := range w.userNum {
+		user[k] = n
+		k++
+	}
+
+	sort.Strings(user)
+
+	k = 0
+	for n := range user {
+		y := 20 + k*20
+		x := w.lenX*bar + 10
+		addLabel(w.Imgage, x, y, user[n], w.users[w.userNum[user[n]]].Color)
+		k++
+	}
+}
+
+func addLabel(img *image.RGBA, x, y int, label string, col color.RGBA) {
+	//col := color.RGBA{0, 0, 0, 255}
+	point := fixed.Point26_6{fixed.Int26_6(x * 64), fixed.Int26_6(y * 64)}
+
+	d := &font.Drawer{
+		Dst:  img,
+		Src:  image.NewUniform(col),
+		Face: basicfont.Face7x13,
+		Dot:  point,
+	}
+	d.DrawString(label)
 }

@@ -107,22 +107,20 @@ func (s *snake) die(w *World, u *User) {
 	for n := range s.Body {
 		w.area[s.Body[n].X][s.Body[n].Y] = ElEat
 	}
-	s.dead = true
+	s.Dead = true
 
 	if u.liveSnakes() == 0 && !u.disconnect {
-		s.dead = false
+		s.Dead = false
 		s.Energe = energeStart
 	}
 }
 
 func (u *User) liveSnakes() int {
 	l := 0
-
 	for n := range u.Snakes {
-		if !u.Snakes[n].dead {
+		if !u.Snakes[n].Dead {
 			l++
 		}
 	}
-
 	return l
 }

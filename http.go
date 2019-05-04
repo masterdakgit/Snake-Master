@@ -12,10 +12,12 @@ func loadHTML(w http.ResponseWriter, r *http.Request) {
 
 func (w *World) loadPict(rw http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
+		mutex.Lock()
 		err := png.Encode(rw, w.Imgage)
 		if err != nil {
 			log.Println("loadPict:", err)
 		}
+		mutex.Unlock()
 	}
 }
 

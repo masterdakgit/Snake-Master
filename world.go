@@ -22,7 +22,7 @@ type User struct {
 }
 
 func (w *World) Create(x, y, balance, wall int) {
-	w.Imgage = image.NewRGBA(image.Rect(0, 0, x*bar+1, y*bar+1))
+	w.Imgage = image.NewRGBA(image.Rect(0, 0, x*bar+1+infoPanelX, y*bar+1))
 
 	w.users = make([]User, 1)
 	w.userNum = make(map[string]int)
@@ -53,7 +53,7 @@ func (w *World) currentBalance() int {
 	}
 	for u := range w.users {
 		for s := range w.users[u].Snakes {
-			if w.users[u].Snakes[s].dead {
+			if w.users[u].Snakes[s].Dead {
 				continue
 			}
 			result += len(w.users[u].Snakes[s].Body)
@@ -89,7 +89,7 @@ func (w *World) Generation() {
 			continue
 		}
 		for s := range w.users[u].Snakes {
-			if w.users[u].Snakes[s].dead {
+			if w.users[u].Snakes[s].Dead {
 				continue
 			}
 			w.users[u].Snakes[s].move(w, &w.users[u])
@@ -100,5 +100,7 @@ func (w *World) Generation() {
 		}
 	}
 	w.setBalance()
+	mutex.Lock()
 	w.imgChange()
+	mutex.Unlock()
 }

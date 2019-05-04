@@ -34,6 +34,7 @@ func (w *World) handleConnection(conn net.Conn) {
 		if err != nil {
 			log.Println(err)
 		}
+		conn.Close()
 		return
 	}
 	name := w.loginName(conn)

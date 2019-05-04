@@ -2,14 +2,14 @@ package SnakeMasters
 
 const (
 	startLength = 4
-	energeStart = 10
+	energeStart = 20
 )
 
 type snake struct {
 	Body   []cell
 	Energe int
+	Dead   bool
 	dir    direction
-	dead   bool
 }
 
 type direction struct {

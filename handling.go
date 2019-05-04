@@ -59,7 +59,9 @@ func (w *World) correctName(name string) string {
 		return "Name is busy."
 	}
 
+	mutex.Lock()
 	w.addNewUser(name)
+	mutex.Unlock()
 
 	return "Hellow, " + name + "!"
 }
@@ -73,9 +75,7 @@ func (w *World) addNewUser(name string) {
 	u.Color = color.RGBA{R, G, B, 255}
 
 	userNum := len(w.users)
-	mutex.Lock()
 	w.userNum[name] = userNum
-	mutex.Unlock()
 	w.users = append(w.users, u)
 
 	w.users[userNum].addNewSnake(w)
@@ -125,6 +125,9 @@ func (w *World) game(u *User, conn net.Conn) {
 
 		move := ""
 		for n := range u.Snakes {
+			if u.Snakes[n].Dead {
+				continue
+			}
 		reEnter:
 			_, err = fmt.Fscanln(conn, &move)
 
