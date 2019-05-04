@@ -1,6 +1,4 @@
-package SnakeMasters
-
-import "fmt"
+package old
 
 func (w *World) setMove(move string, s *snake) string {
 	switch move {
@@ -32,24 +30,24 @@ func (w *World) move(s *snake, cl int) {
 	y = y + s.dir.dy
 
 	switch w.area[x][y] {
-	case elWall:
+	case ElWall:
 		return
-	case elHead:
+	case ElHead:
 		return
-	case elBody:
+	case ElBody:
 		if len(s.Body) > 1 && s.Body[1].X == x && s.Body[1].Y == y {
 			s.div(w, cl)
 		}
 		return
-	case elEat:
+	case ElEat:
 		s.eat(w)
-	case elEmpty:
+	case ElEmpty:
 	}
 
 	lastN := len(s.Body) - 1
 
 	for n := range s.Body {
-		w.area[s.Body[n].X][s.Body[n].Y] = elEmpty
+		w.area[s.Body[n].X][s.Body[n].Y] = ElEmpty
 	}
 
 	for n := lastN; n > 0; n-- {
@@ -61,10 +59,10 @@ func (w *World) move(s *snake, cl int) {
 	s.Body[0].Y = y
 
 	for n := range s.Body {
-		w.area[s.Body[n].X][s.Body[n].Y] = elBody
+		w.area[s.Body[n].X][s.Body[n].Y] = ElBody
 	}
 
-	w.area[x][y] = elHead
+	w.area[x][y] = ElHead
 }
 
 func (s *snake) eat(w *World) {
@@ -78,8 +76,9 @@ func (s *snake) eat(w *World) {
 }
 
 func (s *snake) div(w *World, cl int) {
-	var newSnake snake
 	sLen := len(s.Body)
+
+	var newSnake snake
 	newSnake.Body = make([]cell, sLen-sLen/2)
 
 	for n := sLen / 2; n < sLen; n++ {
@@ -88,6 +87,33 @@ func (s *snake) div(w *World, cl int) {
 	}
 
 	s.Body = s.Body[:sLen/2]
-	fmt.Println(sLen, len(s.Body), len(newSnake.Body))
 	w.clSnake[cl] = append(w.clSnake[cl], newSnake)
+}
+
+func (s *snake) eatSomeSelf(w *World, cl, sn int) {
+	nLast := len(s.Body) - 1
+
+	if nLast < 1 {
+		s.die(w, cl, sn)
+		return
+	}
+
+	w.area[s.Body[nLast].X][s.Body[nLast].Y] = 0
+	s.Body = s.Body[:nLast]
+
+	s.Energe = energeStart
+}
+
+func (s *snake) die(w *World, cl, sn int) {
+	for n := range s.Body {
+		w.area[s.Body[n].X][s.Body[n].Y] = 1
+	}
+
+	s.dead = true
+
+}
+
+func remove(s []snake, i int) []snake {
+	s[len(s)-1], s[i] = s[i], s[len(s)-1]
+	return s[:len(s)-1]
 }

@@ -1,4 +1,4 @@
-package SnakeMasters
+package old
 
 import (
 	"log"
@@ -6,6 +6,9 @@ import (
 )
 
 const (
+	viewRange = 6
+	viewLen   = 1 + 2*viewRange
+
 	ElEmpty = 0
 	ElEat   = -1
 	ElWall  = -2
@@ -14,8 +17,8 @@ const (
 )
 
 func (w *World) findElement(el int) (x, y int) {
-	x = 1 + rand.Intn(w.lenX-2)
-	y = 1 + rand.Intn(w.lenY-2)
+	x = rand.Intn(w.lenX)
+	y = rand.Intn(w.lenY)
 	n := 0
 
 	for {
@@ -29,7 +32,7 @@ func (w *World) findElement(el int) (x, y int) {
 		n++
 		if n > w.lenX*w.lenY {
 			log.Println(x, y, n)
-			log.Println("findElement: The element no found.")
+			panic("findElement: The element no found.")
 		}
 	}
 }
@@ -65,6 +68,32 @@ func (w *World) delEatN(n int) {
 	for x := 0; x < n; x++ {
 		w.delEat()
 	}
+}
+
+func (w *World) VisiString(s *snake) {
+	x := s.Body[0].X
+	y := s.Body[0].Y
+	x0 := x - viewRange
+	x1 := x + viewRange
+	y0 := y - viewRange
+	y1 := y + viewRange
+
+	n := 0
+	var as [viewLen][viewLen]string
+
+	for y := y0; y <= y1; y++ {
+		for x := x0; x <= x1; x++ {
+			if y < 0 || y >= w.lenY || x < 0 || x >= w.lenX {
+				//Out of the edge
+				as[x-x0][y-y0] = "#"
+				n++
+			} else {
+				as[x-x0][y-y0] = elString(w.area[x][y])
+				n++
+			}
+		}
+	}
+	//s.Visibility = as
 }
 
 func elString(n int) string {

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Snake Masters</title>
+
+    <script>
+
+        MyId = Math.random();
+        var ajax = new XMLHttpRequest();
+
+        function f() {
+            setTimeout(ft, 100);
+            function ft() {
+                document.getElementById("i").src = "/pict/?id=" + MyId + "&mr=" + Math.random();
+            }
+        }
+
+        document.onkeydown = function (k) {
+            //document.getElementById("kcode").textContent = k.key;
+            ajax.open('GET', '/key/?key=' + k.key + "&id=" + MyId);
+            ajax.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+            ajax.send();
+        };
+
+
+    </script>
+
+</head>
+<body>
+    <h1 align="center">Snake Masters</h1>
+    <p align="center">
+        <img src="/pict/" id="i" onload="f()">
+    </p>
+    <!--
+    <p align="center">Key code: <span id="kcode"></span></p>
+    -->
+    <p align="center">(C) 2019 masterdak</p>
+</body>
+</html>

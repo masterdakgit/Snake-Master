@@ -1,30 +1,52 @@
-package SnakeMasters
+package old
 
 import (
-	"image"
 	"image/color"
 )
 
+const (
+	energeStart = 10
+)
+
 type World struct {
-	userNum    map[string]int
-	users      []user
+	clMap      map[string]client
+	clSnake    [][]snake
 	area       [][]int
-	lenX, lenY int
 	balance    int
-	Imgage     *image.RGBA
+	lenX, lenY int
+	Gen        int
 }
 
-type user struct {
-	color      color.RGBA
-	snakes     []snake
-	disconnect bool
+type SnakeSlice struct {
+	Color  color.RGBA
+	Snakes []snake
+	Area   [][]int
+}
+
+type client struct {
+	num   int
+	name  string
+	color color.RGBA
+}
+
+type snake struct {
+	Body   []cell
+	Energe int
+	dir    direction
+	dead   bool
+}
+
+type direction struct {
+	dx, dy int
+}
+
+type cell struct {
+	X, Y int
 }
 
 func (w *World) Create(x, y, balance, wall int) {
-	w.Imgage = image.NewRGBA(image.Rect(0, 0, x*bar+1, y*bar+1))
-
-	w.users = make([]user, 1)
-	w.userNum = make(map[string]int)
+	w.clMap = make(map[string]client)
+	w.clSnake = make([][]snake, 0)
 
 	w.lenX = x
 	w.lenY = y
@@ -38,21 +60,15 @@ func (w *World) Create(x, y, balance, wall int) {
 	w.addWallN(wall)
 	w.balance = balance
 	w.setBalance()
-	w.imgChange()
 }
 
 func (w *World) currentBalance() int {
 	result := 0
 	for x := range w.area {
 		for y := range w.area[x] {
-			if w.area[x][y] == ElEat {
+			if w.area[x][y] != ElWall && w.area[x][y] != ElEmpty {
 				result++
 			}
-		}
-	}
-	for _, u := range w.users {
-		for _, s := range u.snakes {
-			result += len(s.Body)
 		}
 	}
 	return result
@@ -78,4 +94,22 @@ func (w *World) setWallEdge() {
 		w.area[0][y] = ElWall
 		w.area[w.lenX-1][y] = ElWall
 	}
+}
+
+func (w *World) Generation() {
+	for _, cl := range w.clMap {
+		for sn, s := range w.clSnake[cl.num] {
+
+			if s.dead {
+				continue
+			}
+
+			w.move(&s, cl.num)
+			s.Energe--
+			if s.Energe <= 0 {
+				s.eatSomeSelf(w, cl.num, sn)
+			}
+		}
+	}
+	w.setBalance()
 }

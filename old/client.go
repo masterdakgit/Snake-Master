@@ -1,27 +1,10 @@
-package SnakeMasters
+package old
 
 import (
 	"image/color"
 	"math/rand"
 	"regexp"
 )
-
-type SnakeData struct {
-	Color struct {
-		R uint8
-		G uint8
-		B uint8
-		A uint8
-	}
-	Snakes []struct {
-		Body []struct {
-			X int
-			Y int
-		}
-		Visibility [][]string
-		Energe     int
-	}
-}
 
 func (w *World) correctName(name string) string {
 	if len(name) < 3 || len(name) > 16 {
@@ -62,13 +45,13 @@ func (w *World) addNewClient(name string) {
 func (w *World) addNewSnake(name string) {
 	num := w.clMap[name].num
 	s := w.snakeCreate(name)
-	w.area[s.Body[0].X][s.Body[0].Y] = elHead
+	w.area[s.Body[0].X][s.Body[0].Y] = ElHead
 	w.clSnake[num] = append(w.clSnake[num], s)
 }
 
 func (w *World) snakeCreate(name string) snake {
 	var s snake
-	x, y := w.findElement(elEmpty)
+	x, y := w.findElement(ElEmpty)
 	s.Body = make([]cell, startLength)
 	s.Energe = energeStart
 
