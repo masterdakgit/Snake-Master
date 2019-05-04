@@ -20,12 +20,12 @@ type cell struct {
 	X, Y int
 }
 
-func (u *user) addNewSnake(w *World) {
+func (u *User) addNewSnake(w *World) {
 	s := u.snakeCreate(w)
-	u.snakes = append(u.snakes, s)
+	u.Snakes = append(u.Snakes, s)
 }
 
-func (u *user) snakeCreate(w *World) snake {
+func (u *User) snakeCreate(w *World) snake {
 	var s snake
 	x, y := w.findElement(ElEmpty)
 	s.Body = make([]cell, startLength)

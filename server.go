@@ -1,7 +1,6 @@
 package SnakeMasters
 
 import (
-	"fmt"
 	"log"
 	"net"
 )
@@ -30,9 +29,6 @@ func errProc(err error) {
 
 func (w *World) handleConnection(conn net.Conn) {
 	name := w.loginName(conn)
-	w.imgChange()
-	_, err := fmt.Fscanln(conn)
-	errProc(err)
+	w.game(&w.users[w.userNum[name]], conn)
 	w.deleteUser(name)
-	w.imgChange()
 }

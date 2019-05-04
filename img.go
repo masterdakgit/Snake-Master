@@ -34,9 +34,12 @@ func (w *World) setSnakeImg() {
 		if u.disconnect {
 			continue
 		}
-		for _, s := range u.snakes {
+		for _, s := range u.Snakes {
+			if s.dead {
+				continue
+			}
 			for _, b := range s.Body {
-				setBar(b.X, b.Y, u.color, w.Imgage)
+				setBar(b.X, b.Y, u.Color, w.Imgage)
 			}
 			setBar(s.Body[0].X, s.Body[0].Y, colorHead, w.Imgage)
 		}
