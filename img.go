@@ -35,18 +35,20 @@ func setBar(x, y int, c color.RGBA, i *image.RGBA) {
 }
 
 func (w *World) setSnakeImg() {
-	for _, u := range w.users {
-		if u.disconnect {
+	for u := range w.users {
+		if w.users[u].disconnect {
 			continue
 		}
-		for _, s := range u.Snakes {
-			if s.Dead {
+		for s := range w.users[u].Snakes {
+			sn := &w.users[u].Snakes[s]
+			if sn.Dead {
 				continue
 			}
-			for _, b := range s.Body {
-				setBar(b.X, b.Y, u.Color, w.Imgage)
+			for _, b := range sn.Body {
+				setBar(b.X, b.Y, w.users[u].Color, w.Imgage)
 			}
-			setBar(s.Body[0].X, s.Body[0].Y, colorHead, w.Imgage)
+
+			setBar(sn.Body[0].X, sn.Body[0].Y, colorHead, w.Imgage)
 		}
 	}
 }

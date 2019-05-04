@@ -91,6 +91,10 @@ func (s *snake) eatSomeSelf(w *World, u *User) {
 func (s *snake) div(w *World, u *User) {
 	sLen := len(s.Body)
 
+	if sLen < 2 {
+		return
+	}
+
 	var newSnake snake
 	newSnake.Body = make([]cell, sLen-sLen/2)
 
