@@ -82,15 +82,19 @@ func (w *World) setWallEdge() {
 }
 
 func (w *World) Generation() {
-	for _, u := range w.users {
-		if u.disconnect {
+	for u := range w.users {
+		if w.users[u].disconnect {
 			continue
 		}
-		for n, s := range u.Snakes {
-			if s.dead {
+		for s := range w.users[u].Snakes {
+			if w.users[u].Snakes[s].dead {
 				continue
 			}
-			s.move(w, &u, n)
+			w.users[u].Snakes[s].move(w)
+			w.users[u].Snakes[s].Energe--
+			if w.users[u].Snakes[s].Energe <= 0 {
+				w.users[u].Snakes[s].eatSomeSelf(w)
+			}
 		}
 	}
 	w.imgChange()

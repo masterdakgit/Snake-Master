@@ -1,7 +1,5 @@
 package SnakeMasters
 
-import "fmt"
-
 func (w *World) setMove(move string, s *snake) string {
 	switch move {
 	case "l":
@@ -24,7 +22,7 @@ func (w *World) setMove(move string, s *snake) string {
 	return `You must enter: "l", "r", "u" or "d".`
 }
 
-func (s *snake) move(w *World, u *User, n int) {
+func (s *snake) move(w *World) {
 	x := s.Body[0].X + s.dir.dx
 	y := s.Body[0].Y + s.dir.dy
 
@@ -35,6 +33,12 @@ func (s *snake) move(w *World, u *User, n int) {
 		return
 	case ElBody:
 		return
+	case ElEat:
+		s.eat()
+	}
+
+	for n := range s.Body {
+		w.area[s.Body[n].X][s.Body[n].Y] = ElEmpty
 	}
 
 	for n := len(s.Body) - 1; n > 0; n-- {
@@ -44,8 +48,11 @@ func (s *snake) move(w *World, u *User, n int) {
 	s.Body[0].X = x
 	s.Body[0].Y = y
 
-	u.Snakes[n].eat()
+	for n := range s.Body {
+		w.area[s.Body[n].X][s.Body[n].Y] = ElBody
+	}
 
+	w.area[x][y] = ElHead
 }
 
 func (s *snake) eat() {
@@ -54,7 +61,6 @@ func (s *snake) eat() {
 	c.Y = s.Body[len(s.Body)-1].Y
 
 	s.Body = append(s.Body, c)
-	fmt.Println(len(s.Body))
 }
 
 func (s *snake) eatSomeSelf(w *World) {

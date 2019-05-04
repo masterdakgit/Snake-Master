@@ -11,9 +11,11 @@ func loadHTML(w http.ResponseWriter, r *http.Request) {
 }
 
 func (w *World) loadPict(rw http.ResponseWriter, r *http.Request) {
-	err := png.Encode(rw, w.Imgage)
-	if err != nil {
-		log.Println("loadPict:", err)
+	if r.Method == "GET" {
+		err := png.Encode(rw, w.Imgage)
+		if err != nil {
+			log.Println("loadPict:", err)
+		}
 	}
 }
 
