@@ -69,9 +69,9 @@ func (w *World) correctName(name string) string {
 func (w *World) addNewUser(name string) {
 	var u User
 
-	R := uint8(rand.Intn(255))
-	G := uint8(rand.Intn(255))
-	B := uint8(rand.Intn(255))
+	R := uint8(32 + rand.Intn(192))
+	G := uint8(32 + rand.Intn(192))
+	B := uint8(32 + rand.Intn(192))
 	u.Color = color.RGBA{R, G, B, 255}
 
 	userNum := len(w.users)

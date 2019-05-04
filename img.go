@@ -7,6 +7,7 @@ import (
 	"image"
 	"image/color"
 	"sort"
+	"strconv"
 )
 
 const (
@@ -73,25 +74,31 @@ func (w *World) imgChange() *image.RGBA {
 func (w *World) setInfoPanel() {
 	for x := w.lenX*bar + 1; x < w.lenX*bar+infoPanelX; x++ {
 		for y := 0; y < w.lenY*bar; y++ {
-			w.Imgage.Set(x, y, colorEmpty)
+			w.Imgage.Set(x, y, colorHead)
 		}
 	}
 
-	user := make([]string, len(w.userNum))
+	user := make([]userScore, len(w.userNum))
 
 	k := 0
 	for n := range w.userNum {
-		user[k] = n
+		user[k].user = n
+		user[k].score = w.users[w.userNum[n]].score()
 		k++
 	}
 
-	sort.Strings(user)
+	sort.Slice(user, func(i, j int) bool {
+		return user[i].score > user[j].score
+	})
 
 	k = 0
 	for n := range user {
 		y := 20 + k*20
 		x := w.lenX*bar + 10
-		addLabel(w.Imgage, x, y, user[n], w.users[w.userNum[user[n]]].Color)
+		addLabel(w.Imgage, x, y, user[n].user, w.users[w.userNum[user[n].user]].Color)
+		y = 20 + k*20
+		x = w.lenX*bar + 125
+		addLabel(w.Imgage, x, y, strconv.Itoa(user[n].score), colorEmpty)
 		k++
 	}
 }
@@ -107,4 +114,20 @@ func addLabel(img *image.RGBA, x, y int, label string, col color.RGBA) {
 		Dot:  point,
 	}
 	d.DrawString(label)
+}
+
+type userScore struct {
+	user  string
+	score int
+}
+
+func (u *User) score() int {
+	result := 0
+	for n := range u.Snakes {
+		if u.Snakes[n].Dead {
+			continue
+		}
+		result += len(u.Snakes[n].Body)
+	}
+	return result
 }
