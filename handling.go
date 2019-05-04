@@ -78,7 +78,7 @@ func (w *World) deleteUser(name string) {
 	log.Println("Delete user: ", name)
 
 	for _, s := range w.users[w.userNum[name]].Snakes {
-		s.die(w)
+		s.die(w, &w.users[w.userNum[name]])
 	}
 
 	w.users[w.userNum[name]].disconnect = true

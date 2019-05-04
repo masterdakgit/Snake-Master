@@ -63,11 +63,11 @@ func (s *snake) eat() {
 	s.Body = append(s.Body, c)
 }
 
-func (s *snake) eatSomeSelf(w *World) {
+func (s *snake) eatSomeSelf(w *World, u *User) {
 	nLast := len(s.Body) - 1
 
 	if nLast < 1 {
-		s.die(w)
+		s.die(w, u)
 		return
 	}
 
@@ -77,7 +77,7 @@ func (s *snake) eatSomeSelf(w *World) {
 	s.Energe = energeStart
 }
 
-func (s *snake) div(u *User, w *World) {
+func (s *snake) div(w *World, u *User) {
 	sLen := len(s.Body)
 
 	var newSnake snake
@@ -92,9 +92,26 @@ func (s *snake) div(u *User, w *World) {
 	u.Snakes = append(u.Snakes, newSnake)
 }
 
-func (s *snake) die(w *World) {
+func (s *snake) die(w *World, u *User) {
 	for n := range s.Body {
 		w.area[s.Body[n].X][s.Body[n].Y] = ElEat
 	}
 	s.dead = true
+
+	if u.liveSnakes() == 0 && !u.disconnect {
+		s.dead = false
+		s.Energe = energeStart
+	}
+}
+
+func (u *User) liveSnakes() int {
+	l := 0
+
+	for n := range u.Snakes {
+		if !u.Snakes[n].dead {
+			l++
+		}
+	}
+
+	return l
 }

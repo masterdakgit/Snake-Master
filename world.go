@@ -93,7 +93,7 @@ func (w *World) Generation() {
 			w.users[u].Snakes[s].move(w)
 			w.users[u].Snakes[s].Energe--
 			if w.users[u].Snakes[s].Energe <= 0 {
-				w.users[u].Snakes[s].eatSomeSelf(w)
+				w.users[u].Snakes[s].eatSomeSelf(w, &w.users[u])
 			}
 		}
 	}
