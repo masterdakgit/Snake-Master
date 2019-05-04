@@ -30,9 +30,9 @@ func errProc(err error) {
 
 func (w *World) handleConnection(conn net.Conn) {
 	name := w.loginName(conn)
-
+	w.imgChange()
 	_, err := fmt.Fscanln(conn)
 	errProc(err)
-
 	w.deleteUser(name)
+	w.imgChange()
 }
