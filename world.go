@@ -65,6 +65,7 @@ func (w *World) currentBalance() int {
 
 func (w *World) setBalance() {
 	currentBalance := w.currentBalance()
+	fmt.Println(currentBalance)
 
 	if currentBalance < w.balance {
 		fmt.Println("Add Eat")

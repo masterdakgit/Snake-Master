@@ -36,5 +36,7 @@ func (u *User) snakeCreate(w *World) snake {
 		s.Body[n].Y = y
 	}
 
+	w.area[s.Body[0].X][s.Body[0].Y] = ElHead
+
 	return s
 }
