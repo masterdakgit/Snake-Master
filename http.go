@@ -78,11 +78,14 @@ func (w *World) gameHTTP(rw http.ResponseWriter, r *http.Request) {
 					jsonSent(&output, rw)
 				}
 			} else {
+				mutexAddSession.Lock()
 				if ipMap[ip] >= maxUserToIp {
 					fmt.Fprintln(rw, `{"answer":"Too many connection from one ip, log in later."}`)
 					return
 				}
+
 				w.addNewSession(name, rw, ip)
+				mutexAddSession.Unlock()
 			}
 		} else {
 			fmt.Fprintln(rw, `{"answer":"Request must contain user."}`)
@@ -117,7 +120,9 @@ func (w *World) addNewSession(name string, rw http.ResponseWriter, ip string) {
 	if session != "" {
 		output.Session = session
 		log.Println("Add new user: ", name, ip)
+		mutex.Lock()
 		ipMap[ip]++
+		mutex.Unlock()
 		w.users[w.userNum[name]].ip = ip
 		go sleeper(name, w, ip)
 	}

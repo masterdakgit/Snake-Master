@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	mutex sync.Mutex
+	mutex, mutexAddSession sync.Mutex
 )
 
 type JsonOutput struct {
