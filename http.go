@@ -46,11 +46,6 @@ func (w *World) gameHTTP(rw http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 		}
 
-		if w.ipMap[ip] > maxUserToIp {
-			fmt.Fprintln(rw, `{"answer":"Too many connection from one ip, log in later."}`)
-			return
-		}
-
 		if len(w.userSession) >= maxSession {
 			fmt.Fprintln(rw, `{"answer":"Too many connection, log in later."}`)
 			return
@@ -83,6 +78,10 @@ func (w *World) gameHTTP(rw http.ResponseWriter, r *http.Request) {
 					jsonSent(&output, rw)
 				}
 			} else {
+				if ipMap[ip] >= maxUserToIp {
+					fmt.Fprintln(rw, `{"answer":"Too many connection from one ip, log in later."}`)
+					return
+				}
 				w.addNewSession(name, rw, ip)
 			}
 		} else {
@@ -97,7 +96,7 @@ func (u *User) unsetDDoS() {
 	u.antiDDoS = false
 }
 
-func sleeper(name string, w *World) {
+func sleeper(name string, w *World, ip string) {
 	for {
 		time.Sleep(1 * time.Second)
 		mutex.Lock()
@@ -105,7 +104,7 @@ func sleeper(name string, w *World) {
 		mutex.Unlock()
 
 		if w.antiSleep[name] > antiSleepSec {
-			w.deleteUser(name)
+			w.deleteUser(name, ip)
 			return
 		}
 	}
@@ -118,9 +117,9 @@ func (w *World) addNewSession(name string, rw http.ResponseWriter, ip string) {
 	if session != "" {
 		output.Session = session
 		log.Println("Add new user: ", name, ip)
-		w.ipMap[ip]++
+		ipMap[ip]++
 		w.users[w.userNum[name]].ip = ip
-		go sleeper(name, w)
+		go sleeper(name, w, ip)
 	}
 	jsonSent(&output, rw)
 }
