@@ -115,6 +115,7 @@ func (w *World) deleteUser(name string) {
 
 	mutex.Lock()
 	delete(w.userNum, name)
+	delete(w.userSession, name)
 	mutex.Unlock()
 }
 

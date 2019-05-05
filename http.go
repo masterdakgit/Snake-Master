@@ -50,6 +50,8 @@ func (w *World) gameHTTP(rw http.ResponseWriter, r *http.Request) {
 				}
 			}
 
+			w.users[w.userNum[name]].antiSleepSec = 0
+
 			if !w.users[w.userNum[name]].antiDDoS {
 				w.sentGameData(&w.users[w.userNum[name]], rw)
 				w.users[w.userNum[name]].antiDDoS = true
@@ -70,6 +72,18 @@ func (u *User) unsetDDoS() {
 	u.antiDDoS = false
 }
 
+func (w *World) sleeper(name string) {
+	for {
+		time.Sleep(1 * time.Second)
+		w.users[w.userNum[name]].antiSleepSec++
+
+		if w.users[w.userNum[name]].antiSleepSec > antiSleepSec {
+			w.deleteUser(name)
+			return
+		}
+	}
+}
+
 func (w *World) addNewSession(name string, rw http.ResponseWriter) {
 	var output JsonOutput
 	ans, session := w.correctName(name)
@@ -78,6 +92,7 @@ func (w *World) addNewSession(name string, rw http.ResponseWriter) {
 		output.Session = session
 	}
 	jsonSent(&output, rw)
+	go w.sleeper(name)
 }
 
 func jsonSent(output *JsonOutput, rw http.ResponseWriter) {

@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	antiDDoS  = 1000 * time.Millisecond
-	antiSleep = 60 * time.Second
+	antiDDoS     = 10 * time.Millisecond
+	antiSleepSec = 10
 )
 
 type World struct {
@@ -23,11 +23,11 @@ type World struct {
 }
 
 type User struct {
-	Color      color.RGBA
-	Snakes     []snake
-	disconnect bool
-	antiDDoS   bool
-	antiSleep  bool
+	Color        color.RGBA
+	Snakes       []snake
+	disconnect   bool
+	antiDDoS     bool
+	antiSleepSec int
 }
 
 func (w *World) Create(x, y, balance, wall int) {
