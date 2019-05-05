@@ -10,11 +10,14 @@ const (
 	antiDDoS     = 10 * time.Millisecond
 	antiSleepSec = 60
 	maxSession   = 20
+	maxUserToIp  = 2
 )
 
 type World struct {
 	userNum     map[string]int
 	userSession map[string]string
+	antiSleep   map[string]int
+	ipMap       map[string]int
 	users       []User
 	area        [][]int
 	lenX, lenY  int
@@ -24,11 +27,11 @@ type World struct {
 }
 
 type User struct {
-	Color        color.RGBA
-	Snakes       []snake
-	disconnect   bool
-	antiDDoS     bool
-	antiSleepSec int
+	Color      color.RGBA
+	Snakes     []snake
+	ip         string
+	disconnect bool
+	antiDDoS   bool
 }
 
 func (w *World) Create(x, y, balance, wall int) {
@@ -37,6 +40,8 @@ func (w *World) Create(x, y, balance, wall int) {
 	w.users = make([]User, 1)
 	w.userNum = make(map[string]int)
 	w.userSession = make(map[string]string)
+	w.antiSleep = make(map[string]int)
+	w.ipMap = make(map[string]int)
 
 	w.lenX = x
 	w.lenY = y

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image/png"
 	"log"
+	"net"
 	"net/http"
 	"time"
 )
@@ -35,45 +36,60 @@ func (w *World) ListenHTTP(port string) {
 }
 
 func (w *World) gameHTTP(rw http.ResponseWriter, r *http.Request) {
-	name := r.FormValue("user")
-	session := r.FormValue("session")
-	move := r.FormValue("move")
+	if r.Method == "GET" {
+		name := r.FormValue("user")
+		session := r.FormValue("session")
+		move := r.FormValue("move")
 
-	if len(w.userSession) > maxSession {
-		fmt.Fprintln(rw, `{"answer":"Too many connection, log in later."}`)
-		return
-	}
+		ip, _, err := net.SplitHostPort(r.RemoteAddr)
+		if err != nil {
+			log.Println(err)
+		}
 
-	if name != "" {
-		if session != "" && w.userSession[name] == session {
-			if move != "" {
-				for n := range move {
-					s := w.setMove(move[n:n+1], &w.users[w.userNum[name]].Snakes[n])
-					if s != "" {
-						var output JsonOutput
-						output.Answer = s
-						jsonSent(&output, rw)
+		if w.ipMap[ip] > maxUserToIp {
+			fmt.Fprintln(rw, `{"answer":"Too many connection from one ip, log in later."}`)
+			return
+		}
+
+		if len(w.userSession) >= maxSession {
+			fmt.Fprintln(rw, `{"answer":"Too many connection, log in later."}`)
+			return
+		}
+
+		if name != "" {
+			if session != "" && w.userSession[name] == session {
+				if move != "" {
+					for n := range move {
+						s := w.setMove(move[n:n+1], &w.users[w.userNum[name]].Snakes[n])
+						if s != "" {
+							var output JsonOutput
+							output.Answer = s
+							jsonSent(&output, rw)
+						}
 					}
 				}
-			}
 
-			w.users[w.userNum[name]].antiSleepSec = 0
+				mutex.Lock()
+				w.antiSleep[name] = 0
+				mutex.Unlock()
 
-			if !w.users[w.userNum[name]].antiDDoS {
-				w.sentGameData(&w.users[w.userNum[name]], rw)
-				w.users[w.userNum[name]].antiDDoS = true
-				go w.users[w.userNum[name]].unsetDDoS()
+				if !w.users[w.userNum[name]].antiDDoS {
+					w.sentGameData(&w.users[w.userNum[name]], rw)
+					w.users[w.userNum[name]].antiDDoS = true
+					go w.users[w.userNum[name]].unsetDDoS()
+				} else {
+					var output JsonOutput
+					output.Answer = "Between request must be pause 10 ms."
+					jsonSent(&output, rw)
+				}
 			} else {
-				var output JsonOutput
-				output.Answer = "Between request must be pause 10 ms."
-				jsonSent(&output, rw)
+				w.addNewSession(name, rw, ip)
 			}
 		} else {
-			w.addNewSession(name, rw)
+			fmt.Fprintln(rw, `{"answer":"Request must contain user."}`)
 		}
-	} else {
-		fmt.Fprintln(rw, `{"answer":"Request must contain user."}`)
 	}
+
 }
 
 func (u *User) unsetDDoS() {
@@ -81,27 +97,32 @@ func (u *User) unsetDDoS() {
 	u.antiDDoS = false
 }
 
-func (w *World) sleeper(name string) {
+func sleeper(name string, w *World) {
 	for {
 		time.Sleep(1 * time.Second)
-		w.users[w.userNum[name]].antiSleepSec++
+		mutex.Lock()
+		w.antiSleep[name]++
+		mutex.Unlock()
 
-		if w.users[w.userNum[name]].antiSleepSec > antiSleepSec {
+		if w.antiSleep[name] > antiSleepSec {
 			w.deleteUser(name)
 			return
 		}
 	}
 }
 
-func (w *World) addNewSession(name string, rw http.ResponseWriter) {
+func (w *World) addNewSession(name string, rw http.ResponseWriter, ip string) {
 	var output JsonOutput
 	ans, session := w.correctName(name)
 	output.Answer = ans
 	if session != "" {
 		output.Session = session
+		log.Println("Add new user: ", name, ip)
+		w.ipMap[ip]++
+		w.users[w.userNum[name]].ip = ip
+		go sleeper(name, w)
 	}
 	jsonSent(&output, rw)
-	go w.sleeper(name)
 }
 
 func jsonSent(output *JsonOutput, rw http.ResponseWriter) {
