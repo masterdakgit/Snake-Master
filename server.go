@@ -18,7 +18,7 @@ func (w *World) ListenAndServe(port string) {
 			errProc(err)
 			continue
 		}
-		go w.handleConnection(conn)
+		//go w.handleConnection(conn)
 	}
 }
 
@@ -28,12 +28,13 @@ func errProc(err error) {
 	}
 }
 
+/*
 func (w *World) handleConnection(conn net.Conn) {
 	if len(w.userNum) > 20 {
 		sentAnswer("Too many connections, log in later.", nil, conn)
 		return
 	}
-	name := w.loginName(conn)
+	//name := w.loginName(conn)
 
 	if name == "E" {
 		sentAnswer("Error to enter name.", nil, conn)
@@ -44,9 +45,9 @@ func (w *World) handleConnection(conn net.Conn) {
 	sentAnswer("Connection or answer error.", nil, conn)
 	w.deleteUser(name)
 }
-
+*/
 func sentAnswer(ans string, data *JsonData, conn net.Conn) bool {
-	var a JsonSent
+	var a JsonOutput
 	a.Answer = ans
 	a.Data = data
 

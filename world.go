@@ -3,22 +3,31 @@ package SnakeMasters
 import (
 	"image"
 	"image/color"
+	"time"
+)
+
+const (
+	antiDDoS  = 1000 * time.Millisecond
+	antiSleep = 60 * time.Second
 )
 
 type World struct {
-	userNum    map[string]int
-	users      []User
-	area       [][]int
-	lenX, lenY int
-	balance    int
-	Imgage     *image.RGBA
-	Gen        int
+	userNum     map[string]int
+	userSession map[string]string
+	users       []User
+	area        [][]int
+	lenX, lenY  int
+	balance     int
+	Imgage      *image.RGBA
+	Gen         int
 }
 
 type User struct {
 	Color      color.RGBA
 	Snakes     []snake
 	disconnect bool
+	antiDDoS   bool
+	antiSleep  bool
 }
 
 func (w *World) Create(x, y, balance, wall int) {
@@ -26,6 +35,7 @@ func (w *World) Create(x, y, balance, wall int) {
 
 	w.users = make([]User, 1)
 	w.userNum = make(map[string]int)
+	w.userSession = make(map[string]string)
 
 	w.lenX = x
 	w.lenY = y

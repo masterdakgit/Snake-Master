@@ -1,8 +1,11 @@
 package SnakeMasters
 
 import (
+	"crypto/md5"
 	"encoding/json"
+	"fmt"
 	"image/color"
+	"io"
 	"log"
 	"math/rand"
 	"net"
@@ -15,14 +18,15 @@ var (
 	mutex sync.Mutex
 )
 
-type JsonSent struct {
-	Answer string
-	Data   *JsonData
+type JsonOutput struct {
+	Answer  string    `json:"answer"`
+	Session string    `json:"session,omitempty"`
+	Data    *JsonData `json:"data,omitempty"`
 }
 
 type JsonInput struct {
-	Name  string
-	Moves []Moves
+	Session string
+	Moves   []Moves
 }
 
 type Moves struct {
@@ -35,6 +39,7 @@ type JsonData struct {
 	Snakes *[]snake
 }
 
+/*
 func (w *World) loginName(conn net.Conn) string {
 	var userAns *JsonInput
 
@@ -53,28 +58,37 @@ func (w *World) loginName(conn net.Conn) string {
 		}
 	}
 }
-
-func (w *World) correctName(name string) string {
+*/
+func (w *World) correctName(name string) (ans, session string) {
 	if len(name) < 3 || len(name) > 16 {
-		return "Name must consist 3-16 char."
+		return "Name must consist 3-16 char.", ""
 	}
 	if mathc, err := regexp.MatchString("^[a-zA-Z0-9]*$", name); !mathc {
-		return "Name must consist a-z, A-Z, 0-9 char."
+		return "Name must consist a-z, A-Z, 0-9 char.", ""
 	} else {
 		errProc(err)
 	}
 	if w.userNum[name] > 0 {
-		return "Name is busy."
+		return "Name is busy.", ""
 	}
 
+	session = string(rand.Int()) + time.Now().String()
+	h := md5.New()
+
+	_, err := io.WriteString(h, session)
+	if err != nil {
+		panic(err)
+	}
+	session = fmt.Sprintf("%x", h.Sum(nil))
+
 	mutex.Lock()
-	w.addNewUser(name)
+	w.addNewUser(name, session)
 	mutex.Unlock()
 
-	return "Hellow, " + name + "!"
+	return "Hellow, " + name + "!", session
 }
 
-func (w *World) addNewUser(name string) {
+func (w *World) addNewUser(name, session string) {
 	var u User
 
 	R := uint8(32 + rand.Intn(192))
@@ -84,6 +98,7 @@ func (w *World) addNewUser(name string) {
 
 	userNum := len(w.users)
 	w.userNum[name] = userNum
+	w.userSession[name] = session
 	w.users = append(w.users, u)
 
 	w.users[userNum].addNewSnake(w)
