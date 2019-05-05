@@ -1,4 +1,4 @@
-package SnakeMasters
+package old
 
 import (
 	"encoding/json"

@@ -2,6 +2,7 @@ package SnakeMasters
 
 import (
 	"encoding/json"
+	"fmt"
 	"image/png"
 	"log"
 	"net/http"
@@ -37,6 +38,12 @@ func (w *World) gameHTTP(rw http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("user")
 	session := r.FormValue("session")
 	move := r.FormValue("move")
+
+	if len(w.userSession) > maxSession {
+		fmt.Fprintln(rw, `{"answer":"Too many connection, log in later."}`)
+		return
+	}
+
 	if name != "" {
 		if session != "" && w.userSession[name] == session {
 			if move != "" {
@@ -64,6 +71,8 @@ func (w *World) gameHTTP(rw http.ResponseWriter, r *http.Request) {
 		} else {
 			w.addNewSession(name, rw)
 		}
+	} else {
+		fmt.Fprintln(rw, `{"answer":"Request must contain user."}`)
 	}
 }
 

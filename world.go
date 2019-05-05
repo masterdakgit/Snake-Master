@@ -8,7 +8,8 @@ import (
 
 const (
 	antiDDoS     = 10 * time.Millisecond
-	antiSleepSec = 10
+	antiSleepSec = 60
+	maxSession   = 20
 )
 
 type World struct {
