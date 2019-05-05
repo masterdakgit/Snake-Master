@@ -36,59 +36,86 @@ func (w *World) ListenHTTP(port string) {
 }
 
 func (w *World) gameHTTP(rw http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
-		name := r.FormValue("user")
-		session := r.FormValue("session")
-		move := r.FormValue("move")
-
-		ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	if r.Method != "GET" {
+		_, err := fmt.Fprintln(rw, `{"answer":"Only GET method handled.."}`)
 		if err != nil {
 			log.Println(err)
 		}
+		return
+	}
 
-		if len(w.userSession) >= maxSession {
-			fmt.Fprintln(rw, `{"answer":"Too many connection, log in later."}`)
-			return
+	name := r.FormValue("user")
+	session := r.FormValue("session")
+	move := r.FormValue("move")
+
+	log.Println(name, "try to connect...")
+
+	if name == "" {
+		_, err := fmt.Fprintln(rw, `{"answer":"Request must contain user."}`)
+		if err != nil {
+			log.Println(err)
 		}
+		return
+	}
 
-		if name != "" {
-			if session != "" && w.userSession[name] == session {
-				if move != "" {
-					for n := range move {
-						s := w.setMove(move[n:n+1], &w.users[w.userNum[name]].Snakes[n])
-						if s != "" {
-							var output JsonOutput
-							output.Answer = s
-							jsonSent(&output, rw)
-						}
-					}
-				}
+	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		log.Println(err)
+	}
 
-				mutex.Lock()
-				w.antiSleep[name] = 0
-				mutex.Unlock()
+	if len(w.userSession) >= maxSession {
+		_, err = fmt.Fprintln(rw, `{"answer":"Too many connection, log in later."}`)
+		if err != nil {
+			log.Println(err)
+		}
+		return
+	}
 
-				if !w.users[w.userNum[name]].antiDDoS {
-					w.sentGameData(&w.users[w.userNum[name]], rw)
-					w.users[w.userNum[name]].antiDDoS = true
-					go w.users[w.userNum[name]].unsetDDoS()
-				} else {
+	mutexAddSession.Lock()
+	if ipMap[ip] >= maxUserToIp {
+		_, err = fmt.Fprintln(rw, `{"answer":"Too many connection from one ip, log in later."}`)
+		if err != nil {
+			log.Println(err)
+		}
+		mutexAddSession.Unlock()
+		return
+	}
+	mutexAddSession.Unlock()
+
+	mutexAddSession.Lock()
+	if session == "" {
+		w.addNewSession(name, rw, ip)
+		mutexAddSession.Unlock()
+		return
+	}
+	mutexAddSession.Unlock()
+
+	if w.userSession[name] == session {
+		if move != "" {
+			for n := range move {
+				s := w.setMove(move[n:n+1], &w.users[w.userNum[name]].Snakes[n])
+				if s != "" {
 					var output JsonOutput
-					output.Answer = "Between request must be pause 10 ms."
+					output.Answer = s
 					jsonSent(&output, rw)
 				}
-			} else {
-				mutexAddSession.Lock()
-				if ipMap[ip] >= maxUserToIp {
-					fmt.Fprintln(rw, `{"answer":"Too many connection from one ip, log in later."}`)
-					return
-				}
-
-				w.addNewSession(name, rw, ip)
-				mutexAddSession.Unlock()
 			}
+		}
+
+		mmutexSleeper.Lock()
+		w.antiSleep[name] = 0
+		mmutexSleeper.Unlock()
+
+		if !w.users[w.userNum[name]].antiDDoS {
+			mutex.Lock()
+			w.sentGameData(&w.users[w.userNum[name]], rw)
+			w.users[w.userNum[name]].antiDDoS = true
+			go w.users[w.userNum[name]].unsetDDoS()
+			mutex.Unlock()
 		} else {
-			fmt.Fprintln(rw, `{"answer":"Request must contain user."}`)
+			var output JsonOutput
+			output.Answer = "Between request must be pause 10 ms."
+			jsonSent(&output, rw)
 		}
 	}
 
@@ -102,14 +129,15 @@ func (u *User) unsetDDoS() {
 func sleeper(name string, w *World, ip string) {
 	for {
 		time.Sleep(1 * time.Second)
-		mutex.Lock()
+		mmutexSleeper.Lock()
 		w.antiSleep[name]++
-		mutex.Unlock()
 
 		if w.antiSleep[name] > antiSleepSec {
 			w.deleteUser(name, ip)
+			mmutexSleeper.Unlock()
 			return
 		}
+		mmutexSleeper.Unlock()
 	}
 }
 
