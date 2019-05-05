@@ -2,7 +2,6 @@ package SnakeMasters
 
 import (
 	"encoding/json"
-	"fmt"
 	"image/color"
 	"log"
 	"math/rand"
@@ -16,32 +15,41 @@ var (
 	mutex sync.Mutex
 )
 
-type jsonSent struct {
-	Area *[][]int
-	User *User
+type JsonSent struct {
+	Answer string
+	Data   *JsonData
+}
+
+type JsonInput struct {
+	Name  string
+	Moves []Moves
+}
+
+type Moves struct {
+	NumSnake  int
+	Direction string
+}
+
+type JsonData struct {
+	Area   *[][]int
+	Snakes *[]snake
 }
 
 func (w *World) loginName(conn net.Conn) string {
-	_, err := fmt.Fprint(conn, "Welcome to the Snake Masters!\r\n")
-	var name string
+	var userAns *JsonInput
 
 	for {
-		_, err = fmt.Fprint(conn, "Enter you name:\r\n")
+		sentAnswer("Enter your name.", nil, conn)
 
-		name = ""
-		_, err = fmt.Fscanln(conn, &name)
+		userAns = jsonAnsUnmarshal(conn)
 
-		ans := w.correctName(name)
-		_, err = fmt.Fprint(conn, ans+"\r\n")
-
-		if err != nil {
-			err = conn.Close()
-			errProc(err)
-			return "E"
-		}
+		ans := w.correctName(userAns.Name)
+		sentAnswer(ans, nil, conn)
 
 		if ans[0:6] == "Hellow" {
-			return name
+			return userAns.Name
+		} else {
+			return "E"
 		}
 	}
 }
@@ -84,12 +92,15 @@ func (w *World) addNewUser(name string) {
 func (w *World) deleteUser(name string) {
 	log.Println("Delete user: ", name)
 
-	for _, s := range w.users[w.userNum[name]].Snakes {
-		s.die(w, &w.users[w.userNum[name]])
+	for n := range w.users[w.userNum[name]].Snakes {
+		w.users[w.userNum[name]].Snakes[n].die(w, &w.users[w.userNum[name]])
 	}
 
 	w.users[w.userNum[name]].disconnect = true
+
+	mutex.Lock()
 	delete(w.userNum, name)
+	mutex.Unlock()
 }
 
 func (w *World) game(u *User, conn net.Conn) {
@@ -104,42 +115,45 @@ func (w *World) game(u *User, conn net.Conn) {
 			time.Sleep(1 * time.Millisecond)
 		}
 
-		var jsonData jsonSent
-		jsonData.Area = &w.area
-		jsonData.User = u
+		var data JsonData
+		data.Area = &w.area
+		data.Snakes = &u.Snakes
 
-		b, err := json.Marshal(jsonData)
-		if err != nil {
-			log.Println(err)
-			return
-		}
+		sentAnswer("Sent data.", &data, conn)
 
-		_, err = conn.Write(b)
-		errProc(err)
+		userAns := jsonAnsUnmarshal(conn)
 
-		_, err = fmt.Fprint(conn, "\r\n")
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		move := ""
-		for n := range u.Snakes {
-			if u.Snakes[n].Dead {
-				continue
-			}
-		reEnter:
-			_, err = fmt.Fscanln(conn, &move)
-
-			if err != nil {
-				return
-			}
-			s := w.setMove(move, &u.Snakes[n])
+		for n := range userAns.Moves {
+			s := w.setMove(userAns.Moves[n].Direction, &u.Snakes[userAns.Moves[n].NumSnake])
 			if s != "" {
-				fmt.Fprintln(conn, s)
-				goto reEnter
+				sentAnswer(s, nil, conn)
+				return
 			}
 		}
 
 	}
+}
+
+func jsonAnsUnmarshal(conn net.Conn) *JsonInput {
+	var userAns *JsonInput = &JsonInput{}
+	var jb []byte
+	b := make([]byte, 64)
+
+	for {
+		n, err := conn.Read(b)
+		jb = append(jb, b[:n]...)
+		if err != nil {
+			log.Println(err)
+		}
+		if n < 64 {
+			break
+		}
+	}
+
+	err := json.Unmarshal(jb, userAns)
+	if err != nil {
+		panic(err)
+	}
+
+	return userAns
 }

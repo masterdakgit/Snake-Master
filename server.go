@@ -1,7 +1,7 @@
 package SnakeMasters
 
 import (
-	"fmt"
+	"encoding/json"
 	"log"
 	"net"
 )
@@ -29,15 +29,38 @@ func errProc(err error) {
 }
 
 func (w *World) handleConnection(conn net.Conn) {
-	if len(w.userNum) > 10 {
-		_, err := fmt.Fprintln(conn, "Snake Masters: Too many connections, log in later.")
-		if err != nil {
-			log.Println(err)
-		}
-		conn.Close()
+	if len(w.userNum) > 20 {
+		sentAnswer("Too many connections, log in later.", nil, conn)
 		return
 	}
 	name := w.loginName(conn)
+
+	if name == "E" {
+		sentAnswer("Error to enter name.", nil, conn)
+		return
+	}
+
 	w.game(&w.users[w.userNum[name]], conn)
+	sentAnswer("Connection or answer error.", nil, conn)
 	w.deleteUser(name)
+}
+
+func sentAnswer(ans string, data *JsonData, conn net.Conn) bool {
+	var a JsonSent
+	a.Answer = ans
+	a.Data = data
+
+	var b []byte
+	b, err := json.Marshal(a)
+	if err != nil {
+		log.Println(err)
+	}
+
+	_, err = conn.Write(b)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+
+	return true
 }

@@ -6,6 +6,7 @@ const (
 )
 
 type snake struct {
+	Num    int
 	Body   []cell
 	Energe int
 	Dead   bool
@@ -22,6 +23,7 @@ type cell struct {
 
 func (u *User) addNewSnake(w *World) {
 	s := u.snakeCreate(w)
+	s.Num = len(u.Snakes)
 	u.Snakes = append(u.Snakes, s)
 }
 
@@ -35,8 +37,6 @@ func (u *User) snakeCreate(w *World) snake {
 		s.Body[n].X = x
 		s.Body[n].Y = y
 	}
-
 	w.area[s.Body[0].X][s.Body[0].Y] = ElHead
-
 	return s
 }
