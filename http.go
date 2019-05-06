@@ -180,16 +180,14 @@ func (w *World) sentGameData(u *User, rw http.ResponseWriter) {
 
 func (w *World) humanGame(rw http.ResponseWriter, r *http.Request) {
 	user := r.FormValue("user")
-	fmt.Println(user)
+	session := r.FormValue("session")
 
 	if user != "" {
-		if human[user].name != user {
+		if human[user].name != user || human[user].session != session {
 			var newHuman humanData
 			newHuman.name = user
 			human[user] = newHuman
-			humanConnection(user)
-
-			fmt.Fprintln(rw, "http://localhost:8080/human/?user="+user+"&session="+human[user].session)
+			humanConnection(user, rw)
 			return
 		}
 	}
@@ -204,7 +202,7 @@ type humanData struct {
 	session string
 }
 
-func humanConnection(user string) {
+func humanConnection(user string, rw http.ResponseWriter) {
 	resp, err := http.Get("http://localhost:8080/game/?user=" + user)
 	if err != nil {
 		panic(err)
@@ -217,9 +215,17 @@ func humanConnection(user string) {
 		panic(err)
 	}
 
+	if data.Session == "" {
+		fmt.Fprintln(rw, data.Answer)
+		return
+	}
+
 	newHuman := human[user]
 	newHuman.session = data.Session
 	human[user] = newHuman
+
+	fmt.Fprintf(rw, "<a href=\"http://localhost:8080/human/?user=%s&session=%s\">Start game</a>",
+		user, human[user].session)
 
 }
 
@@ -233,9 +239,6 @@ func key(rw http.ResponseWriter, r *http.Request) {
 
 	key := r.FormValue("key")
 	m := ""
-
-	fmt.Println(key)
-	fmt.Println(user, session)
 
 	switch key {
 	case "ArrowUp":

@@ -96,6 +96,7 @@ func (w *World) deleteUser(name, ip string) {
 	mutex.Lock()
 	delete(w.userNum, name)
 	delete(w.userSession, name)
+	delete(human, name)
 	ipMap[ip]--
 	mutex.Unlock()
 }
