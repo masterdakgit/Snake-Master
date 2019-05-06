@@ -78,6 +78,7 @@ func (w *World) GameHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	if session == "" {
 		w.addNewSession(name, rw, ip)
+		log.Println("Forwarded for:", r.Header.Get("X-FORWARDED-FOR"))
 		return
 	}
 

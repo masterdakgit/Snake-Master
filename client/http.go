@@ -6,11 +6,13 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
+	"sync"
 	"time"
 )
 
 var (
-	host string
+	host  string
+	mutex sync.Mutex
 )
 
 type jsonOutput struct {
@@ -41,11 +43,14 @@ func Create(site string) {
 }
 
 func HumanGame(rw http.ResponseWriter, r *http.Request) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	user := r.FormValue("user")
 	session := r.FormValue("session")
 
 	if user != "" {
-		if human[user].name != user || human[user].session != session {
+		if human[user].name != user || human[user].session != session || session == "" {
 			var newHuman humanData
 			newHuman.name = user
 			human[user] = newHuman
@@ -67,6 +72,7 @@ type humanData struct {
 
 func humanConnection(user string, rw http.ResponseWriter) {
 	resp, err := http.Get(host + "/game/?user=" + user)
+	defer resp.Body.Close()
 	if err != nil {
 		panic(err)
 	}
@@ -108,7 +114,7 @@ func humanBots(user, session string) {
 			}
 			m := "_"
 
-			if data.Data != nil {
+			if data.Data != nil && data.Data.Snakes != nil {
 				snakes := *data.Data.Snakes
 
 				for n := range snakes {
@@ -124,6 +130,7 @@ func humanBots(user, session string) {
 				}
 			}
 
+			r.Body.Close()
 			resp, err := http.Get(host + "/game/?user=" + user + "&session=" + session + "&move=" + m +
 				"&humanbot=true")
 			if err != nil {
@@ -145,6 +152,7 @@ func humanBots(user, session string) {
 }
 
 func Key(rw http.ResponseWriter, r *http.Request) {
+
 	if r.Method != "GET" {
 		return
 	}
@@ -170,6 +178,9 @@ func Key(rw http.ResponseWriter, r *http.Request) {
 
 	var data *jsonOutput = &jsonOutput{}
 
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	if human[user].resp.Body != nil {
 		decoder := json.NewDecoder(human[user].resp.Body)
 		err := decoder.Decode(data)
@@ -194,6 +205,9 @@ func Key(rw http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	if human[user].resp.Body != nil {
+		human[user].resp.Body.Close()
+	}
 	resp, err := http.Get(host + "/game/?user=" + user + "&session=" + session + "&move=" + m)
 	if err != nil {
 		panic(err)
