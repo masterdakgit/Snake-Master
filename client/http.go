@@ -3,19 +3,18 @@ package human
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"math/rand"
 	"net/http"
 	"time"
 )
 
-type JsonOutput struct {
+type jsonOutput struct {
 	Answer  string    `json:"answer"`
 	Session string    `json:"session,omitempty"`
-	Data    *JsonData `json:"data,omitempty"`
+	Data    *jsonData `json:"data,omitempty"`
 }
 
-type JsonData struct {
+type jsonData struct {
 	Area   *[][]int
 	Snakes *[]snake
 }
@@ -31,16 +30,11 @@ type cell struct {
 	X, Y int
 }
 
-func ListenHTTP(port string) {
-	http.HandleFunc("/human/", humanGame)
-	http.HandleFunc("/key/", key)
-	err := http.ListenAndServe(port, nil)
-	if err != nil {
-		log.Println("ListenHTTP:", err)
-	}
+func Create() {
+	human = make(map[string]humanData)
 }
 
-func humanGame(rw http.ResponseWriter, r *http.Request) {
+func HumanGame(rw http.ResponseWriter, r *http.Request) {
 	user := r.FormValue("user")
 	session := r.FormValue("session")
 
@@ -71,7 +65,7 @@ func humanConnection(user string, rw http.ResponseWriter) {
 		panic(err)
 	}
 
-	var data *JsonOutput = &JsonOutput{}
+	var data *jsonOutput = &jsonOutput{}
 	decoder := json.NewDecoder(resp.Body)
 	err = decoder.Decode(data)
 	if err != nil {
@@ -95,7 +89,7 @@ func humanConnection(user string, rw http.ResponseWriter) {
 }
 
 func humanBots(user, session string) {
-	var data *JsonOutput = &JsonOutput{}
+	var data *jsonOutput = &jsonOutput{}
 	var r http.Response
 
 	for {
@@ -143,7 +137,7 @@ func humanBots(user, session string) {
 	}
 }
 
-func key(rw http.ResponseWriter, r *http.Request) {
+func Key(rw http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		return
 	}
@@ -167,7 +161,7 @@ func key(rw http.ResponseWriter, r *http.Request) {
 
 	}
 
-	var data *JsonOutput = &JsonOutput{}
+	var data *jsonOutput = &jsonOutput{}
 
 	if human[user].resp.Body != nil {
 		decoder := json.NewDecoder(human[user].resp.Body)

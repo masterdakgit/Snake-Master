@@ -10,11 +10,11 @@ import (
 	"time"
 )
 
-func loadHTML(w http.ResponseWriter, r *http.Request) {
+func LoadIndexHTML(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "index.html")
 }
 
-func (w *World) loadPict(rw http.ResponseWriter, r *http.Request) {
+func (w *World) LoadPict(rw http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		mutex.Lock()
 		err := png.Encode(rw, w.Imgage)
@@ -25,17 +25,7 @@ func (w *World) loadPict(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (w *World) ListenHTTP(port string) {
-	http.HandleFunc("/pict/", w.loadPict)
-	http.HandleFunc("/game/", w.gameHTTP)
-	http.HandleFunc("/", loadHTML)
-	err := http.ListenAndServe(port, nil)
-	if err != nil {
-		log.Println("ListenHTTP:", err)
-	}
-}
-
-func (w *World) gameHTTP(rw http.ResponseWriter, r *http.Request) {
+func (w *World) GameHTTP(rw http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		_, err := fmt.Fprintln(rw, `{"answer":"Only GET method handled."}`)
 		if err != nil {
