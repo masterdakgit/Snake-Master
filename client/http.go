@@ -98,6 +98,7 @@ func humanBots(user, session string) {
 			decoder := json.NewDecoder(r.Body)
 			err := decoder.Decode(data)
 			if err != nil {
+				return
 				panic(err)
 			}
 			m := "_"
