@@ -22,9 +22,10 @@ func (w *World) setMove(move string, s *snake) string {
 		s.dir.dx = 1000
 		s.dir.dy = 0
 		return ""
-
+	case "_":
+		return ""
 	}
-	return `You must enter: "l", "r", "u", "d" or "/".`
+	return `You must enter: "l", "r", "u", "d", "/" or "_".`
 }
 
 func (s *snake) move(w *World, u *User) {

@@ -123,4 +123,9 @@ func (w *World) Generation() {
 	mutex.Lock()
 	w.imgChange()
 	mutex.Unlock()
+	w.deleteDead()
+}
+
+func (w *World) deleteDead(){
+	for
 }

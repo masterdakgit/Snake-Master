@@ -2,7 +2,7 @@ package SnakeMasters
 
 const (
 	startLength = 4
-	energeStart = 20
+	energeStart = 10
 )
 
 type snake struct {
