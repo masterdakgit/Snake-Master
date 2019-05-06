@@ -3,6 +3,7 @@ package human
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"math/rand"
 	"net/http"
 	"time"
@@ -102,7 +103,7 @@ func humanBots(user, session string) {
 		if r.Body != nil {
 			decoder := json.NewDecoder(r.Body)
 			err := decoder.Decode(data)
-			if err != nil {
+			if err != nil && err != io.EOF {
 				panic(err)
 			}
 			m := "_"

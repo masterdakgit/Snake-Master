@@ -40,6 +40,7 @@ func (w *World) GameHTTP(rw http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("user")
 	session := r.FormValue("session")
 	move := r.FormValue("move")
+	humanbot := r.FormValue("humanbot")
 
 	if name == "" {
 		_, err := fmt.Fprintln(rw, `{"answer":"Request must contain user."}`)
@@ -96,7 +97,9 @@ func (w *World) GameHTTP(rw http.ResponseWriter, r *http.Request) {
 		}
 
 		mmutexSleeper.Lock()
-		w.antiSleep[name] = 0
+		if humanbot != "true" {
+			w.antiSleep[name] = 0
+		}
 		mmutexSleeper.Unlock()
 
 		if !w.users[w.userNum[name]].antiDDoS {
