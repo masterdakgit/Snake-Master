@@ -60,7 +60,7 @@ type humanData struct {
 }
 
 func humanConnection(user string, rw http.ResponseWriter) {
-	resp, err := http.Get("http://localhost:8080/game/?user=" + user)
+	resp, err := http.Get("/game/?user=" + user)
 	if err != nil {
 		panic(err)
 	}
@@ -83,7 +83,7 @@ func humanConnection(user string, rw http.ResponseWriter) {
 
 	go humanBots(user, data.Session)
 
-	fmt.Fprintf(rw, "<a href=\"http://localhost:8080/human/?user=%s&session=%s\">Start game</a>",
+	fmt.Fprintf(rw, "<a href=\"/human/?user=%s&session=%s\">Start game</a>",
 		user, human[user].session)
 
 }
@@ -118,7 +118,7 @@ func humanBots(user, session string) {
 				}
 			}
 
-			resp, err := http.Get("http://localhost:8080/game/?user=" + user + "&session=" + session + "&move=" + m)
+			resp, err := http.Get("/game/?user=" + user + "&session=" + session + "&move=" + m)
 			if err != nil {
 				panic(err)
 			}
@@ -128,7 +128,7 @@ func humanBots(user, session string) {
 			continue
 		}
 
-		resp, err := http.Get("http://localhost:8080/game/?user=" + user + "&session=" + session)
+		resp, err := http.Get("/game/?user=" + user + "&session=" + session)
 		if err != nil {
 			panic(err)
 		}
@@ -186,7 +186,7 @@ func Key(rw http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	resp, err := http.Get("http://localhost:8080/game/?user=" + user + "&session=" + session + "&move=" + m)
+	resp, err := http.Get("/game/?user=" + user + "&session=" + session + "&move=" + m)
 	if err != nil {
 		panic(err)
 	}

@@ -10,7 +10,7 @@ const (
 	antiDDoS     = 50 * time.Millisecond
 	antiSleepSec = 60
 	maxSession   = 20
-	maxUserToIp  = 20
+	maxUserToIp  = 2
 )
 
 var (
