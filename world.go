@@ -7,10 +7,10 @@ import (
 )
 
 const (
-	antiDDoS     = 10 * time.Millisecond
+	antiDDoS     = 50 * time.Millisecond
 	antiSleepSec = 60
 	maxSession   = 20
-	maxUserToIp  = 2
+	maxUserToIp  = 20
 )
 
 var (
@@ -45,6 +45,7 @@ func (w *World) Create(x, y, balance, wall int) {
 	w.userSession = make(map[string]string)
 	w.antiSleep = make(map[string]int)
 	ipMap = make(map[string]int)
+	human = make(map[string]humanData)
 
 	w.lenX = x
 	w.lenY = y

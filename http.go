@@ -28,6 +28,8 @@ func (w *World) loadPict(rw http.ResponseWriter, r *http.Request) {
 func (w *World) ListenHTTP(port string) {
 	http.HandleFunc("/pict/", w.loadPict)
 	http.HandleFunc("/game/", w.gameHTTP)
+	http.HandleFunc("/human/", w.humanGame)
+	http.HandleFunc("/key/", key)
 	http.HandleFunc("/", loadHTML)
 	err := http.ListenAndServe(port, nil)
 	if err != nil {
@@ -37,18 +39,19 @@ func (w *World) ListenHTTP(port string) {
 
 func (w *World) gameHTTP(rw http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
-		_, err := fmt.Fprintln(rw, `{"answer":"Only GET method handled.."}`)
+		_, err := fmt.Fprintln(rw, `{"answer":"Only GET method handled."}`)
 		if err != nil {
 			log.Println(err)
 		}
 		return
 	}
 
+	mutexAddSession.Lock()
+	defer mutexAddSession.Unlock()
+
 	name := r.FormValue("user")
 	session := r.FormValue("session")
 	move := r.FormValue("move")
-
-	log.Println(name, "try to connect...")
 
 	if name == "" {
 		_, err := fmt.Fprintln(rw, `{"answer":"Request must contain user."}`)
@@ -59,11 +62,16 @@ func (w *World) gameHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+
+	if ip == "::1" {
+		ip = "127.0.0.1"
+	}
+
 	if err != nil {
 		log.Println(err)
 	}
 
-	if len(w.userSession) >= maxSession {
+	if len(w.userSession) > maxSession {
 		_, err = fmt.Fprintln(rw, `{"answer":"Too many connection, log in later."}`)
 		if err != nil {
 			log.Println(err)
@@ -71,28 +79,25 @@ func (w *World) gameHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mutexAddSession.Lock()
-	if ipMap[ip] >= maxUserToIp {
+	if ipMap[ip] > maxUserToIp {
 		_, err = fmt.Fprintln(rw, `{"answer":"Too many connection from one ip, log in later."}`)
 		if err != nil {
 			log.Println(err)
 		}
-		mutexAddSession.Unlock()
 		return
 	}
-	mutexAddSession.Unlock()
 
-	mutexAddSession.Lock()
 	if session == "" {
 		w.addNewSession(name, rw, ip)
-		mutexAddSession.Unlock()
 		return
 	}
-	mutexAddSession.Unlock()
 
 	if w.userSession[name] == session {
 		if move != "" {
 			for n := range move {
+				if n >= len(w.users[w.userNum[name]].Snakes) {
+					break
+				}
 				s := w.setMove(move[n:n+1], &w.users[w.userNum[name]].Snakes[n])
 				if s != "" {
 					var output JsonOutput
@@ -107,11 +112,9 @@ func (w *World) gameHTTP(rw http.ResponseWriter, r *http.Request) {
 		mmutexSleeper.Unlock()
 
 		if !w.users[w.userNum[name]].antiDDoS {
-			mutex.Lock()
 			w.sentGameData(&w.users[w.userNum[name]], rw)
 			w.users[w.userNum[name]].antiDDoS = true
 			go w.users[w.userNum[name]].unsetDDoS()
-			mutex.Unlock()
 		} else {
 			var output JsonOutput
 			output.Answer = "Between request must be pause 10 ms."
@@ -173,4 +176,81 @@ func (w *World) sentGameData(u *User, rw http.ResponseWriter) {
 	output.Answer = "Sent game data."
 	output.Data = &data
 	jsonSent(&output, rw)
+}
+
+func (w *World) humanGame(rw http.ResponseWriter, r *http.Request) {
+	user := r.FormValue("user")
+	fmt.Println(user)
+
+	if user != "" {
+		if human[user].name != user {
+			var newHuman humanData
+			newHuman.name = user
+			human[user] = newHuman
+			humanConnection(user)
+
+			fmt.Fprintln(rw, "http://localhost:8080/human/?user="+user+"&session="+human[user].session)
+			return
+		}
+	}
+
+	http.ServeFile(rw, r, "human.html")
+}
+
+var human map[string]humanData
+
+type humanData struct {
+	name    string
+	session string
+}
+
+func humanConnection(user string) {
+	resp, err := http.Get("http://localhost:8080/game/?user=" + user)
+	if err != nil {
+		panic(err)
+	}
+
+	var data *JsonOutput = &JsonOutput{}
+	decoder := json.NewDecoder(resp.Body)
+	err = decoder.Decode(data)
+	if err != nil {
+		panic(err)
+	}
+
+	newHuman := human[user]
+	newHuman.session = data.Session
+	human[user] = newHuman
+
+}
+
+func key(rw http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		return
+	}
+
+	user := r.FormValue("user")
+	session := r.FormValue("session")
+
+	key := r.FormValue("key")
+	m := ""
+
+	fmt.Println(key)
+	fmt.Println(user, session)
+
+	switch key {
+	case "ArrowUp":
+		m = "u"
+	case "ArrowDown":
+		m = "d"
+	case "ArrowLeft":
+		m = "l"
+	case "ArrowRight":
+		m = "r"
+	}
+
+	_, err := http.Get("http://localhost:8080/game/?user=" + user + "&session=" + session + "&move=" + m)
+	if err != nil {
+		panic(err)
+	}
+
 }

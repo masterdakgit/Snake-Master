@@ -78,6 +78,8 @@ func (w *World) addNewUser(name, session string) {
 	w.userNum[name] = userNum
 	w.userSession[name] = session
 	w.users = append(w.users, u)
+	w.users[w.userNum[name]].disconnect = false
+	w.antiSleep[name] = 0
 
 	w.users[userNum].addNewSnake(w)
 }
