@@ -249,6 +249,7 @@ func humanBots(user, session string) {
 
 			if data.Data != nil {
 				snakes := *data.Data.Snakes
+
 				for n := range snakes {
 					if n == 0 {
 						continue

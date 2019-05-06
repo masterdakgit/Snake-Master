@@ -122,10 +122,20 @@ func (w *World) Generation() {
 	w.setBalance()
 	mutex.Lock()
 	w.imgChange()
-	mutex.Unlock()
 	w.deleteDead()
+	mutex.Unlock()
 }
 
-func (w *World) deleteDead(){
-	for
+func (w *World) deleteDead() {
+	for u := range w.users {
+		for s := 0; s < len(w.users[u].Snakes); s++ {
+			if w.users[u].Snakes[s].Dead {
+				if s == len(w.users[u].Snakes)-1 {
+					w.users[u].Snakes = w.users[u].Snakes[:s]
+				} else {
+					w.users[u].Snakes = append(w.users[u].Snakes[:s], w.users[u].Snakes[s+1:]...)
+				}
+			}
+		}
+	}
 }
