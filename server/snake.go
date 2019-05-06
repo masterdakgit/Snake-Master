@@ -1,4 +1,4 @@
-package SnakeMasters
+package server
 
 const (
 	startLength = 4
@@ -6,10 +6,10 @@ const (
 )
 
 type snake struct {
-	Num    int
-	Body   []cell
-	Energe int
-	Dead   bool
+	Num    int    `json:"num"`
+	Body   []cell `json:"body"`
+	Energe int    `json:"energe"`
+	Dead   bool   `json:"dead"`
 	dir    direction
 }
 
@@ -18,7 +18,8 @@ type direction struct {
 }
 
 type cell struct {
-	X, Y int
+	X int `json:"x"`
+	Y int `json:"y"`
 }
 
 func (u *User) addNewSnake(w *World) {

@@ -1,4 +1,4 @@
-package SnakeMasters
+package server
 
 import (
 	"crypto/md5"
@@ -33,8 +33,8 @@ type Moves struct {
 }
 
 type JsonData struct {
-	Area   *[][]int
-	Snakes *[]snake
+	Area   *[][]int `json:"area"`
+	Snakes *[]snake `json:"snakes"`
 }
 
 func (w *World) correctName(name string) (ans, session string) {
@@ -96,7 +96,6 @@ func (w *World) deleteUser(name, ip string) {
 	mutex.Lock()
 	delete(w.userNum, name)
 	delete(w.userSession, name)
-	delete(human, name)
 	ipMap[ip]--
 	mutex.Unlock()
 }

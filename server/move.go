@@ -1,4 +1,4 @@
-package SnakeMasters
+package server
 
 func (w *World) setMove(move string, s *snake) string {
 	switch move {

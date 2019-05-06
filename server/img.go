@@ -1,4 +1,4 @@
-package SnakeMasters
+package server
 
 import (
 	"golang.org/x/image/font"

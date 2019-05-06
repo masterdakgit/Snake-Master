@@ -1,4 +1,4 @@
-package SnakeMasters
+package server
 
 import (
 	"image"
@@ -45,7 +45,6 @@ func (w *World) Create(x, y, balance, wall int) {
 	w.userSession = make(map[string]string)
 	w.antiSleep = make(map[string]int)
 	ipMap = make(map[string]int)
-	human = make(map[string]humanData)
 
 	w.lenX = x
 	w.lenY = y

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Snake Master</title>
+
+    <script>
+
+        MyId = Math.random();
+        var ajax = new XMLHttpRequest();
+
+        function f() {
+            setTimeout(ft, 50);
+            function ft() {
+                document.getElementById("i").src = "/pict/?id=" + MyId + "&mr=" + Math.random();
+            }
+        }
+    </script>
+
+</head>
+<body>
+    <h1 align="center">Snake Master</h1>
+    <p align="center">
+        <img src="/pict/" id="i" onload="f()">
+    </p>
+    <p align="center">(C) 2019 masterdak</p>
+</body>
+</html>
