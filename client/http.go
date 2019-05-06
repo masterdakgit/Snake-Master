@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+var (
+	host string
+)
+
 type jsonOutput struct {
 	Answer  string    `json:"answer"`
 	Session string    `json:"session,omitempty"`
@@ -30,7 +34,8 @@ type cell struct {
 	X, Y int
 }
 
-func Create() {
+func Create(site string) {
+	host = site
 	human = make(map[string]humanData)
 }
 
@@ -60,7 +65,7 @@ type humanData struct {
 }
 
 func humanConnection(user string, rw http.ResponseWriter) {
-	resp, err := http.Get("/game/?user=" + user)
+	resp, err := http.Get(host + "/game/?user=" + user)
 	if err != nil {
 		panic(err)
 	}
@@ -98,7 +103,6 @@ func humanBots(user, session string) {
 			decoder := json.NewDecoder(r.Body)
 			err := decoder.Decode(data)
 			if err != nil {
-				return
 				panic(err)
 			}
 			m := "_"
@@ -119,7 +123,8 @@ func humanBots(user, session string) {
 				}
 			}
 
-			resp, err := http.Get("/game/?user=" + user + "&session=" + session + "&move=" + m)
+			resp, err := http.Get(host + "/game/?user=" + user + "&session=" + session + "&move=" + m +
+				"&humanbot=true")
 			if err != nil {
 				panic(err)
 			}
@@ -129,7 +134,7 @@ func humanBots(user, session string) {
 			continue
 		}
 
-		resp, err := http.Get("/game/?user=" + user + "&session=" + session)
+		resp, err := http.Get(host + "/game/?user=" + user + "&session=" + session + "&humanbot=true")
 		if err != nil {
 			panic(err)
 		}
@@ -168,7 +173,8 @@ func Key(rw http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(human[user].resp.Body)
 		err := decoder.Decode(data)
 		if err != nil {
-			panic(err)
+			return
+			//panic(err)
 		}
 
 		if data.Data != nil {
@@ -187,7 +193,7 @@ func Key(rw http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	resp, err := http.Get("/game/?user=" + user + "&session=" + session + "&move=" + m)
+	resp, err := http.Get(host + "/game/?user=" + user + "&session=" + session + "&move=" + m)
 	if err != nil {
 		panic(err)
 	}

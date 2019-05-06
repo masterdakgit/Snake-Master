@@ -5,6 +5,7 @@
     <title>Snake Master</title>
 
     <script>
+        const host = "http://localhost:8080";
 
         MyId = Math.random();
         var ajax = new XMLHttpRequest();
@@ -12,7 +13,7 @@
         function f() {
             setTimeout(ft, 50);
             function ft() {
-                document.getElementById("i").src = "/pict/?id=" + MyId + "&mr=" + Math.random();
+                document.getElementById("i").src = host + "/pict/?id=" + MyId + "&mr=" + Math.random();
             }
         }
 
@@ -33,7 +34,7 @@
         document.onkeydown = function (k) {
             var result = getUrlVar();
             document.getElementById("kcode").textContent = k.key;
-            ajax.open('GET', '/key/?key=' + k.key + "&user=" + result['user'] + "&session=" + result['session']);
+            ajax.open('GET', host + '/key/?key=' + k.key + "&user=" + result['user'] + "&session=" + result['session']);
             ajax.setRequestHeader("X-Requested-With", "XMLHttpRequest");
             ajax.send();
         };
